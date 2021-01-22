@@ -83,8 +83,6 @@ namespace FerrumModules.Engine
                     }
                 }
             }
-
-            Position = originalPosition;
         }
     }
 }
