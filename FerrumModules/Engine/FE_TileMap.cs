@@ -22,10 +22,10 @@ namespace FerrumModules.Engine
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
             Centered = false;
-            LoadTMX(mapFilePath, tileSetTexture);
+            LoadTMX(mapFilePath);
         }
 
-        public void LoadTMX(string mapFilePath, Texture2D tileSetTexture)
+        public void LoadTMX(string mapFilePath)
         {
             var mapFile = new TmxMap(mapFilePath);
             TileWidth = mapFile.TileWidth;
@@ -33,7 +33,6 @@ namespace FerrumModules.Engine
             Width = mapFile.Width;
             Height = mapFile.Height;
 
-            var totalTiles = tileSetTexture.Width / TileWidth * tileSetTexture.Height / TileHeight;
             var firstGid = mapFile.Tilesets[0].FirstGid;
 
             mapValues.Clear();

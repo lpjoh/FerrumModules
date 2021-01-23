@@ -15,11 +15,11 @@ namespace FerrumModules.Engine
             public Buttons button;
         }
 
-        private static Dictionary<string, Keys> keyboardDict = new Dictionary<string, Keys>();
-        private static Dictionary<string, PlayerButton> buttonDict = new Dictionary<string, PlayerButton>();
+        private static readonly Dictionary<string, Keys> keyboardDict = new Dictionary<string, Keys>();
+        private static readonly Dictionary<string, PlayerButton> buttonDict = new Dictionary<string, PlayerButton>();
 
         private static KeyboardState previousKeyboardState;
-        private static Dictionary<PlayerIndex, GamePadState> previousButtonStates = new Dictionary<PlayerIndex, GamePadState>();
+        private static readonly Dictionary<PlayerIndex, GamePadState> previousButtonStates = new Dictionary<PlayerIndex, GamePadState>();
 
         public static void UpdateActionStates()
         {
