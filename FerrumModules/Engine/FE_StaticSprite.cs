@@ -9,7 +9,7 @@ namespace FerrumModules.Engine
 {
     public class FE_StaticSprite : FE_Sprite
     {
-        public FE_StaticSprite(Texture2D texture, int tileSizeX, int tileSizeY, int frameIndex) : base(texture, tileSizeX, tileSizeY)
+        public FE_StaticSprite(Texture2D texture, int tileWidth, int tileHeight, int frameIndex) : base(texture, tileWidth, tileHeight)
         {
             CurrentFrame = frameIndex;
         }

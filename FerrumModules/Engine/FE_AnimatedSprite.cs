@@ -27,8 +27,8 @@ namespace FerrumModules.Engine
         private readonly FE_Animation CurrentAnimation;
         private float _currentFrameTime;
 
-        public FE_AnimatedSprite(Texture2D texture, int tileSizeX, int tileSizeY, FE_Animation startingAnimation)
-            : base(texture, tileSizeX, tileSizeY)
+        public FE_AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, FE_Animation startingAnimation)
+            : base(texture, tileWidth, tileHeight)
         {
             CurrentAnimation = startingAnimation;
         }

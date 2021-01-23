@@ -4,6 +4,7 @@ using System.Text;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 using FerrumModules.Engine;
 
@@ -11,6 +12,8 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FE_Engine
     {
+        public TestGame() : base(1280, 720) { }
+
         public Texture2D marioTexture;
         public Texture2D pixFont;
         public override void LoadGameContent()
@@ -34,18 +37,26 @@ namespace FerrumModules.Tests
             mario2.Name = "Koopa";
 
             var testCamera = CurrentScene.Add(new FE_Camera());
-            testCamera.Scale = new Vector2(4, 4);
             testCamera.PivotEntity = mario;
             CurrentScene.Camera = testCamera;
+            testCamera.Scale.X = 4;
+            testCamera.Scale.Y = 4;
 
             mario2.Position = new Vector2(32, 32);
+
+            FE_Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
+            FE_Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
+
             Console.WriteLine(CurrentScene.EntityList.Count);
         }
 
         public override void UpdateGame(float delta)
         {
-            CurrentScene.Get<FE_TransformEntity>("Mario").Position.X += 2f;
-            CurrentScene.Get<FE_TransformEntity>("Mario").Position.Y += 2f;
+            if (FE_Input.IsActionJustPressed("move_right"))
+                CurrentScene.Get<FE_TransformEntity>("Mario").Position.X += 16f;
+            else if (FE_Input.IsActionJustPressed("move_left"))
+                CurrentScene.Get<FE_TransformEntity>("Mario").Position.X -= 16f;
+
             base.UpdateGame(delta);
         }
     }

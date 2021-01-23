@@ -10,19 +10,28 @@ namespace FerrumModules.Engine
     {
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private RenderTarget2D _renderTarget;
         private readonly SpriteEffects _spriteBatchEffects;
 
         protected FE_Scene CurrentScene;
 
-        public FE_Engine(FE_Scene startingScene = null, int windowSizeX = 1280, int windowSizeY = 720, string windowName = "Ferrum Engine")
+        private float renderWidth, renderHeight;
+
+        public FE_Engine(
+            int displayBufferWidth = 1280,
+            int displayBufferHeight = 720,
+            FE_Scene startingScene = null,
+            string windowName = "Ferrum Engine")
         {
             _graphics = new GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = windowSizeX,
-                PreferredBackBufferHeight = windowSizeY
+                PreferredBackBufferWidth = displayBufferWidth,
+                PreferredBackBufferHeight = displayBufferHeight
             };
 
             Window.AllowUserResizing = true;
+            Window.ClientSizeChanged += OnWindowResize;
+
             Window.Title = windowName;
             _graphics.ApplyChanges();
 
@@ -54,7 +63,15 @@ namespace FerrumModules.Engine
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _renderTarget = new RenderTarget2D(
+                GraphicsDevice,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                false,
+                GraphicsDevice.PresentationParameters.BackBufferFormat,
+                DepthFormat.Depth24);
 
+            UpdateRenderSize();
             LoadGameContent();
             InitGame();
         }
@@ -67,10 +84,9 @@ namespace FerrumModules.Engine
                 Exit();
 
             var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             UpdateGame(delta);
-
             CurrentScene.Update(delta);
+            FE_Input.UpdateActionStates();
 
             base.Update(gameTime);
         }
@@ -79,29 +95,64 @@ namespace FerrumModules.Engine
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
-
             var camera = CurrentScene.Camera;
             var originalCameraPosition = camera.Position;
             
-            camera.Position -= new Vector2(
-                _graphics.PreferredBackBufferWidth / 2,
-                _graphics.PreferredBackBufferHeight / 2)
+            if (camera.Centered)
+            {
+                camera.Position -= new Vector2(
+                _renderTarget.Width / 2,
+                _renderTarget.Height / 2)
                 / CurrentScene.Camera.Scale;
+            }
 
             camera.BoundingBox = new Rectangle(
                 (int)camera.Position.X,
                 (int)camera.Position.Y,
-                (int)(_graphics.PreferredBackBufferWidth / camera.Scale.X + camera.Scale.X),
-                (int)(_graphics.PreferredBackBufferHeight / camera.Scale.Y + camera.Scale.Y));
+                (int)(_renderTarget.Width / camera.Scale.X + camera.Scale.X),
+                (int)(_renderTarget.Height / camera.Scale.Y + camera.Scale.Y));
 
+            GraphicsDevice.SetRenderTarget(_renderTarget);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
+
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             CurrentScene.Render(_spriteBatch, _spriteBatchEffects);
+            _spriteBatch.End();
 
-            if (camera != null) camera.Position = (Vector2)originalCameraPosition;
+            GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
+
+            _spriteBatch.Draw(_renderTarget, new Rectangle(
+                _graphics.PreferredBackBufferWidth / 2 - (int)(renderWidth / 2),
+                _graphics.PreferredBackBufferHeight / 2 - (int)(renderHeight / 2),
+                (int)renderWidth,
+                (int)renderHeight),
+                Color.White);
 
             _spriteBatch.End();
+
+            camera.Position = (Vector2)originalCameraPosition;
+
             base.Draw(gameTime);
         }
+
+        public void OnWindowResize(Object sender, EventArgs e)
+        {
+            UpdateRenderSize();
+        }
+
+        public void UpdateRenderSize()
+        {
+            if ((float)_renderTarget.Height / _renderTarget.Width > (float)_graphics.PreferredBackBufferHeight / _graphics.PreferredBackBufferWidth)
+            {
+                renderHeight = _graphics.PreferredBackBufferHeight;
+                renderWidth = renderHeight * _renderTarget.Width / _renderTarget.Height;
+                return;
+            }
+            renderWidth = _graphics.PreferredBackBufferWidth;
+            renderHeight = renderWidth * _renderTarget.Height / _renderTarget.Width;
+        }
+
+
     }
 }

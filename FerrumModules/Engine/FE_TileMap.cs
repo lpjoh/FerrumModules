@@ -14,13 +14,13 @@ namespace FerrumModules.Engine
         private readonly List<List<int>> mapValues = new List<List<int>>();
         public int Width { get; private set; }
         public int Height { get; private set; }
-        private static int ChunkSizeX;
-        private static int ChunkSizeY;
+        private static int ChunkWidth;
+        private static int ChunkHeight;
 
-        public FE_TileMap(string mapFilePath, Texture2D tileSetTexture, int chunkSizeX = 8, int chunkSizeY = 8) : base(tileSetTexture, 0, 0)
+        public FE_TileMap(string mapFilePath, Texture2D tileSetTexture, int chunkWidth = 16, int chunkHeight = 16) : base(tileSetTexture, 0, 0)
         {
-            ChunkSizeX = chunkSizeX;
-            ChunkSizeY = chunkSizeY;
+            ChunkWidth = chunkWidth;
+            ChunkHeight = chunkHeight;
             Centered = false;
             LoadTMX(mapFilePath, tileSetTexture);
         }
@@ -28,12 +28,12 @@ namespace FerrumModules.Engine
         public void LoadTMX(string mapFilePath, Texture2D tileSetTexture)
         {
             var mapFile = new TmxMap(mapFilePath);
-            TileSizeX = mapFile.TileWidth;
-            TileSizeY = mapFile.TileHeight;
+            TileWidth = mapFile.TileWidth;
+            TileHeight = mapFile.TileHeight;
             Width = mapFile.Width;
             Height = mapFile.Height;
 
-            var totalTiles = tileSetTexture.Width / TileSizeX * tileSetTexture.Height / TileSizeY;
+            var totalTiles = tileSetTexture.Width / TileWidth * tileSetTexture.Height / TileHeight;
             var firstGid = mapFile.Tilesets[0].FirstGid;
 
             mapValues.Clear();
@@ -51,28 +51,28 @@ namespace FerrumModules.Engine
         {
             Vector2 originalPosition = Position;
 
-            for (int chunkY = 0; chunkY < Height / ChunkSizeY + 1; chunkY++)
+            for (int chunkY = 0; chunkY < Height / ChunkHeight + 1; chunkY++)
             {
-                var scaledChunkPositionY = chunkY * ChunkSizeY;
-                for (int chunkX = 0; chunkX < Width / ChunkSizeX + 1; chunkX++)
+                var scaledChunkPositionY = chunkY * ChunkHeight;
+                for (int chunkX = 0; chunkX < Width / ChunkWidth + 1; chunkX++)
                 {
-                    var scaledChunkPositionX = chunkX * ChunkSizeX;
+                    var scaledChunkPositionX = chunkX * ChunkWidth;
                     if (FE_Collision.RectsCollide(Scene.Camera.BoundingBox, new Rectangle(
-                        (int)((scaledChunkPositionX + Position.X) * Scale.X * TileSizeX),
-                        (int)((scaledChunkPositionY + Position.Y) * Scale.Y * TileSizeY),
-                        (int)(ChunkSizeX * TileSizeX * Scale.X),
-                        (int)(ChunkSizeY * TileSizeY * Scale.Y)
+                        (int)((scaledChunkPositionX + Position.X) * Scale.X * TileWidth),
+                        (int)((scaledChunkPositionY + Position.Y) * Scale.Y * TileHeight),
+                        (int)(ChunkWidth * TileWidth * Scale.X),
+                        (int)(ChunkHeight * TileHeight * Scale.Y)
                         ))) // Check collision if tile chunk is on screen
                     {
-                        for (int tileY = 0; tileY < ChunkSizeY; tileY++)
+                        for (int tileY = 0; tileY < ChunkHeight; tileY++)
                         {
                             if (scaledChunkPositionY + tileY >= mapValues.Count) break;
-                            for (int tileX = 0; tileX < ChunkSizeX; tileX++)
+                            for (int tileX = 0; tileX < ChunkWidth; tileX++)
                             {
                                 if (scaledChunkPositionX + tileX >= mapValues[scaledChunkPositionY + tileY].Count) break;
                                 Position = (
-                                    new Vector2(tileX * TileSizeX, tileY * TileSizeY) +
-                                    new Vector2(scaledChunkPositionX * TileSizeX, scaledChunkPositionY * TileSizeY)
+                                    new Vector2(tileX * TileWidth, tileY * TileHeight) +
+                                    new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
                                     ) * Scale + originalPosition;
 
                                 CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];

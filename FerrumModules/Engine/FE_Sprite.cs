@@ -10,28 +10,27 @@ namespace FerrumModules.Engine
     public abstract class FE_Sprite : FE_TransformEntity
     {
         public Texture2D Texture;
-        public bool Centered = true;
         private Rectangle srcRect = new Rectangle();
 
-        private int _tileSizeX;
-        public int TileSizeX
+        private int _tileWidth;
+        public int TileWidth
         {
-            get { return _tileSizeX; }
+            get { return _tileWidth; }
             set
             {
-                _tileSizeX = value;
-                srcRect.Width = _tileSizeX;
+                _tileWidth = value;
+                srcRect.Width = _tileWidth;
             }
         }
 
-        private int _tileSizeY;
-        public int TileSizeY
+        private int _tileHeight;
+        public int TileHeight
         {
-            get { return _tileSizeY; }
+            get { return _tileHeight; }
             set
             {
-                _tileSizeY = value;
-                srcRect.Height = _tileSizeY;
+                _tileHeight = value;
+                srcRect.Height = _tileHeight;
             }
         }
 
@@ -42,13 +41,13 @@ namespace FerrumModules.Engine
             set
             {
                 _currentFrame = value;
-                int framesPerRow = (Texture.Width / TileSizeX);
-                srcRect.X = _currentFrame % framesPerRow * TileSizeX;
-                srcRect.Y = _currentFrame / framesPerRow * TileSizeY;
+                int framesPerRow = (Texture.Width / TileWidth);
+                srcRect.X = _currentFrame % framesPerRow * TileWidth;
+                srcRect.Y = _currentFrame / framesPerRow * TileHeight;
             }
         }
 
-        public FE_Sprite(Texture2D loadTexture, int tileSizeX, int tileSizeY)
+        public FE_Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
             if (Texture == null) throw new Exception("Sprite texture did not load correctly.");
@@ -56,8 +55,8 @@ namespace FerrumModules.Engine
             Position = new Vector2(0.0f, 0.0f);
             Scale = new Vector2(1.0f, 1.0f);
 
-            TileSizeX = tileSizeX;
-            TileSizeY = tileSizeY;
+            TileWidth = tileWidth;
+            TileHeight = tileHeight;
         }
 
         public override void Update(float delta)
@@ -73,15 +72,15 @@ namespace FerrumModules.Engine
                 new Rectangle (
                     (int)Position.X,
                     (int)Position.Y,
-                    (int)(TileSizeX * Scale.X),
-                    (int)(TileSizeX * Scale.Y)
+                    (int)(TileWidth * Scale.X),
+                    (int)(TileWidth * Scale.Y)
                 );
 
             bool isOnScreen = FE_Collision.RectsCollide(Scene.Camera.BoundingBox, boundingBox);
 
             if (Texture != null && isOnScreen)
             {
-                Vector2 renderOrigin = Centered ? new Vector2(TileSizeX, TileSizeY) / 2 : Vector2.Zero;
+                Vector2 renderOrigin = Centered ? new Vector2(TileWidth, TileHeight) / 2 : Vector2.Zero;
                 spriteBatch.Draw(
                     Texture,
                     RenderPosition,

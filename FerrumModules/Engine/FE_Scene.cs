@@ -15,6 +15,11 @@ namespace FerrumModules.Engine
 
         public Queue<FE_Entity> DeletionQueue = new Queue<FE_Entity>();
 
+        public FE_Scene()
+        {
+            Camera.Centered = false;
+        }
+
         public override void Update(float delta)
         {
             foreach (var e in DeletionQueue) Remove(e);
