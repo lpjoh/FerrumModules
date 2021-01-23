@@ -74,10 +74,10 @@ namespace FerrumModules.Engine
             buttonDict[actionName] = new PlayerButton{ playerIndex = playerIndex, button = button };
         }
 
-        public static void AddAction(string actionName, Keys key, Buttons button)
+        public static void AddAction(string actionName, Keys key, Buttons button, PlayerIndex playerIndex = PlayerIndex.One)
         {
             AddAction(actionName, key);
-            AddAction(actionName, button);
+            AddAction(actionName, button, playerIndex);
         }
 
         public static void RemoveAction(string actionName)
