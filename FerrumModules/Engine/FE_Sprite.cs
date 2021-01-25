@@ -65,8 +65,8 @@ namespace FerrumModules.Engine
 
             if (Centered)
             {
-                boundingBox.X -= TileWidth / 2;
-                boundingBox.Y -= TileWidth / 2;
+                boundingBox.X -= (int)(TileWidth * Scale.X) / 2;
+                boundingBox.Y -= (int)(TileHeight * Scale.Y) / 2;
             }
 
             return boundingBox;

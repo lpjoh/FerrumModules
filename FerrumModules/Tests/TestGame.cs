@@ -39,6 +39,7 @@ namespace FerrumModules.Tests
             testCamera.Scale.Y = 4;
 
             mario2.Position = new Vector2(32, 32);
+            mario2.Scale = new Vector2(4, 4);
 
             FE_Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             FE_Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
