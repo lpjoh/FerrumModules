@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.IO;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content;
 
 using TiledSharp;
 
@@ -17,7 +17,7 @@ namespace FerrumModules.Engine
         private static int ChunkWidth;
         private static int ChunkHeight;
 
-        public FE_TileMap(string mapFilePath, Texture2D tileSetTexture, int chunkWidth = 16, int chunkHeight = 16) : base(tileSetTexture, 0, 0)
+        public FE_TileMap(string mapFilePath, int chunkWidth = 16, int chunkHeight = 16) : base(null, 0, 0)
         {
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
@@ -27,7 +27,10 @@ namespace FerrumModules.Engine
 
         public void LoadTMX(string mapFilePath)
         {
-            var mapFile = new TmxMap(mapFilePath);
+            var mapFile = new TmxMap("Content/Maps/" + mapFilePath + ".tmx");
+
+            Texture = FE_Assets.Textures[Path.GetFileNameWithoutExtension(mapFile.Tilesets[0].Image.Source)];
+
             TileWidth = mapFile.TileWidth;
             TileHeight = mapFile.TileHeight;
             Width = mapFile.Width;
@@ -69,13 +72,16 @@ namespace FerrumModules.Engine
                             for (int tileX = 0; tileX < ChunkWidth; tileX++)
                             {
                                 if (scaledChunkPositionX + tileX >= mapValues[scaledChunkPositionY + tileY].Count) break;
-                                Position = (
-                                    new Vector2(tileX * TileWidth, tileY * TileHeight) +
-                                    new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
-                                    ) * Scale + originalPosition;
+                                if (mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX] >= 0)
+                                {
+                                    Position = (
+                                        new Vector2(tileX * TileWidth, tileY * TileHeight) +
+                                        new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
+                                        ) * Scale + originalPosition;
 
-                                CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
-                                base.Render(spriteBatch, spriteBatchEffects);
+                                    CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
+                                    base.Render(spriteBatch, spriteBatchEffects);
+                                }
                             }
                         }
                         Position = originalPosition;

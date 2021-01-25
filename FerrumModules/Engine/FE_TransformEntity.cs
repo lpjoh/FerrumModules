@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
@@ -19,8 +15,18 @@ namespace FerrumModules.Engine
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
             base.Render(spriteBatch, spriteBatchEffects);
-            RenderScale = Scale * Scene.Camera.Scale;
-            RenderPosition = (Position - Scene.Camera.Position) / Scale * RenderScale;
+            var canvasTransform = CanvasTransformation(Position, Scale, Scene.Camera);
+            RenderPosition = canvasTransform.Position;
+            RenderScale = canvasTransform.Scale;
+        }
+
+        public struct FE_Transformation { public Vector2 Position, Scale; }
+
+        public static FE_Transformation CanvasTransformation(Vector2 position, Vector2 scale, FE_Camera camera)
+        {
+            var transformedScale = scale * camera.Scale;
+            var transformedPosition = (position - camera.Position) / scale * transformedScale;
+            return new FE_Transformation { Position = transformedPosition, Scale = transformedScale };
         }
     }
 }

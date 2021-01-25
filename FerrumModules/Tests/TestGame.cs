@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using FerrumModules.Engine;
@@ -14,14 +12,7 @@ namespace FerrumModules.Tests
     {
         public TestGame() : base(1280, 720) { }
 
-        public Texture2D marioTexture;
-        public Texture2D pixFont;
-        public override void LoadGameContent()
-        {
-            base.LoadGameContent();
-            marioTexture = Content.Load<Texture2D>("mario");
-            pixFont = Content.Load<Texture2D>("pixfont");
-        }
+        public enum RenderLayers { TileLayer, EnemyLayer, PlayerLayer }
 
         public override void InitGame()
         {
@@ -29,9 +20,14 @@ namespace FerrumModules.Tests
             var marioFrames = new List<int>() { 0, 1, 2, 3, 4 };
             var marioAnim = new FE_Animation(marioFrames, 6);
 
-            var testTileSet = CurrentScene.Add(new FE_TileMap("big.tmx", pixFont));
+            var marioTexture = FE_Assets.Textures["mario"];
             var mario = CurrentScene.Add(new FE_AnimatedSprite(marioTexture, 16, 16, marioAnim));
+            mario.SetRenderLayer(RenderLayers.PlayerLayer);
             var mario2 = CurrentScene.Add(new FE_StaticSprite(marioTexture, 16, 16, 8));
+            mario2.SetRenderLayer(RenderLayers.EnemyLayer);
+
+            var testTileSet = CurrentScene.Add(new FE_TileMap("big"));
+            testTileSet.SetRenderLayer(RenderLayers.TileLayer);
 
             mario.Name = "Mario";
             mario2.Name = "Koopa";
@@ -46,16 +42,24 @@ namespace FerrumModules.Tests
 
             FE_Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             FE_Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
+            FE_Input.AddAction("move_up", Keys.Up, Buttons.LeftThumbstickUp);
+            FE_Input.AddAction("move_down", Keys.Down, Buttons.LeftThumbstickDown);
 
             Console.WriteLine(CurrentScene.EntityList.Count);
         }
 
         public override void UpdateGame(float delta)
         {
-            if (FE_Input.IsActionJustPressed("move_right"))
-                CurrentScene.Get<FE_TransformEntity>("Mario").Position.X += 16f;
-            else if (FE_Input.IsActionJustPressed("move_left"))
-                CurrentScene.Get<FE_TransformEntity>("Mario").Position.X -= 16f;
+            var player = CurrentScene.Get<FE_TransformEntity>("Mario");
+            if (FE_Input.IsActionPressed("move_right"))
+                player.Position.X += 1f;
+            else if (FE_Input.IsActionPressed("move_left"))
+                player.Position.X -= 1f;
+
+            if (FE_Input.IsActionPressed("move_up"))
+                player.Position.Y -= 1f;
+            else if (FE_Input.IsActionPressed("move_down"))
+                player.Position.Y += 1f;
 
             base.UpdateGame(delta);
         }

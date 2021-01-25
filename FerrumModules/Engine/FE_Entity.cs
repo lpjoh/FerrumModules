@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
 {
@@ -30,7 +26,15 @@ namespace FerrumModules.Engine
         }
 
         public bool queueForDeletion = false;
-        public int renderLayer = 0;
+
+        public int RenderLayer { get; private set; } = 0;
+
+        public void SetRenderLayer<EnumType>(EnumType layerEnum)
+        {
+            if (!typeof(EnumType).IsEnum) { throw new ArgumentException(nameof(layerEnum)); }
+            RenderLayer = (int)(object)layerEnum;
+            Console.WriteLine(RenderLayer);
+        }
 
         public virtual void Exit() { Scene.DeletionQueue.Enqueue(this); }
     }

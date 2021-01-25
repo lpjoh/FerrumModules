@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,6 +17,8 @@ namespace FerrumModules.Engine
         protected FE_Scene CurrentScene;
 
         private float renderWidth, renderHeight;
+
+        private const string TextureDirectory = "Textures";
 
         public FE_Engine(
             int displayBufferWidth = 1280,
@@ -56,6 +59,7 @@ namespace FerrumModules.Engine
         protected override void Initialize()
         {
             base.Initialize();
+            InitGame();
         }
 
         public virtual void InitGame() { }
@@ -71,10 +75,27 @@ namespace FerrumModules.Engine
                 GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
 
+            DirectoryInfo textureDir = new DirectoryInfo(Content.RootDirectory + "/" + TextureDirectory);
+            FileInfo[] textureFiles = textureDir.GetFiles();
+
+            foreach (var file in textureFiles)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(file.Name);
+
+                var texture = Content.Load<Texture2D>(TextureDirectory + "/" + fileName);
+                FE_Assets.AddTexture(texture, fileName);
+            }
+
             UpdateRenderSize();
             LoadGameContent();
-            InitGame();
         }
+
+        protected override void UnloadContent()
+        {
+            base.UnloadContent();
+            _spriteBatch.Dispose();
+        }
+
 
         public virtual void LoadGameContent() { }
 
@@ -117,6 +138,7 @@ namespace FerrumModules.Engine
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
             CurrentScene.Render(_spriteBatch, _spriteBatchEffects);
+
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);

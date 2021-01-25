@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
@@ -50,13 +46,30 @@ namespace FerrumModules.Engine
         public FE_Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
-            if (Texture == null) throw new Exception("Sprite texture did not load correctly.");
 
             Position = new Vector2(0.0f, 0.0f);
             Scale = new Vector2(1.0f, 1.0f);
 
             TileWidth = tileWidth;
             TileHeight = tileHeight;
+        }
+
+        public Rectangle GetBoundingBox()
+        {
+            var boundingBox = new Rectangle(
+                    (int)Position.X,
+                    (int)Position.Y,
+                    (int)(TileWidth * Scale.X),
+                    (int)(TileWidth * Scale.Y)
+                );
+
+            if (Centered)
+            {
+                boundingBox.X -= TileWidth / 2;
+                boundingBox.Y -= TileWidth / 2;
+            }
+
+            return boundingBox;
         }
 
         public override void Update(float delta)
@@ -68,15 +81,7 @@ namespace FerrumModules.Engine
         {
             base.Render(spriteBatch, spriteBatchEffects);
 
-            var boundingBox =
-                new Rectangle (
-                    (int)Position.X,
-                    (int)Position.Y,
-                    (int)(TileWidth * Scale.X),
-                    (int)(TileWidth * Scale.Y)
-                );
-
-            bool isOnScreen = FE_Collision.RectsCollide(Scene.Camera.BoundingBox, boundingBox);
+            bool isOnScreen = FE_Collision.RectsCollide(Scene.Camera.BoundingBox, GetBoundingBox());
 
             if (Texture != null && isOnScreen)
             {

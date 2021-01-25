@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 
 using Microsoft.Xna.Framework.Graphics;
@@ -10,6 +9,7 @@ namespace FerrumModules.Engine
     public class FE_Scene : FE_ActiveElement
     {
         public List<FE_Entity> EntityList { get; private set; } = new List<FE_Entity>();
+
         private readonly Dictionary<string, FE_Entity> _entityNameDict = new Dictionary<string, FE_Entity>();
         public FE_Camera Camera = new FE_Camera();
 
@@ -30,9 +30,29 @@ namespace FerrumModules.Engine
 
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
+            SortEntitiesByLayer();
             foreach (var e in EntityList)
             {
                 e.Render(spriteBatch, spriteBatchEffects);
+            }
+        }
+
+        private void SortEntitiesByLayer()
+        {
+            for (var i = 1; i < EntityList.Count; i++)
+            {
+                var entity = EntityList[i];
+                var iterationComplete = false;
+                for (var j = i - 1; j >= 0 && !iterationComplete;)
+                {
+                    if (entity.RenderLayer < EntityList[j].RenderLayer)
+                    {
+                        EntityList[j + 1] = EntityList[j];
+                        j--;
+                        EntityList[j + 1] = entity;
+                    }
+                    else iterationComplete = true;
+                }
             }
         }
 
@@ -76,7 +96,7 @@ namespace FerrumModules.Engine
             _entityNameDict[name] = entity;
         }
 
-        private void Remove<EntityType>(EntityType entity) where EntityType : FE_Entity
+        public void Remove<EntityType>(EntityType entity) where EntityType : FE_Entity
         {
             if (!EntityList.Remove(entity))
                 throw new Exception("Entity \"" + entity.Name + "\" does not exist in the scene or was already removed.");
