@@ -101,15 +101,15 @@ namespace FerrumModules.Engine
 
         protected override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            UpdateGame(delta);
             CurrentScene.Update(delta);
-            FE_Input.UpdateActionStates();
+            UpdateGame(delta);
 
-            base.Update(gameTime);
+            FE_Input.UpdateActionStates();
         }
 
         public virtual void UpdateGame(float delta) { }

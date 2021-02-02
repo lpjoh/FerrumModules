@@ -7,6 +7,8 @@ namespace FerrumModules.Engine
     {
         public Vector2 Position = new Vector2(0.0f, 0.0f);
         public Vector2 Scale = new Vector2(1.0f, 1.0f);
+        public float Angle = 0.0f;
+
         public bool Centered = true;
 
         protected Vector2 RenderPosition { get; private set; }

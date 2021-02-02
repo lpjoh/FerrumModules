@@ -47,7 +47,7 @@ namespace FerrumModules.Engine
         {
             Texture = loadTexture;
 
-            Position = new Vector2(0.0f, 0.0f);
+            Position = Vector2.Zero;
             Scale = new Vector2(1.0f, 1.0f);
 
             TileWidth = tileWidth;
@@ -72,11 +72,6 @@ namespace FerrumModules.Engine
             return boundingBox;
         }
 
-        public override void Update(float delta)
-        {
-            base.Update(delta);
-        }
-
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
             base.Render(spriteBatch, spriteBatchEffects);
@@ -91,7 +86,7 @@ namespace FerrumModules.Engine
                     RenderPosition,
                     srcRect,
                     Color.White,
-                    0.0f,
+                    Angle,
                     renderOrigin,
                     RenderScale,
                     spriteBatchEffects,

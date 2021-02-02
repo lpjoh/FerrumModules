@@ -10,7 +10,7 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FE_Engine
     {
-        public TestGame() : base(1280, 720) { }
+        public TestGame() : base(640, 240) { }
 
         public enum RenderLayers { TileLayer, EnemyLayer, PlayerLayer }
 
@@ -29,28 +29,36 @@ namespace FerrumModules.Tests
             var testTileSet = CurrentScene.Add(new FE_TileMap("big"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
 
+            var marioPhys = CurrentScene.Add(new FE_PhysicsEntity(mario));
+
+            var mario2Phys = CurrentScene.Add(new FE_PhysicsEntity(mario2));
+
             mario.Name = "Mario";
+            marioPhys.Name = "MarioPhys";
             mario2.Name = "Koopa";
 
             var testCamera = CurrentScene.Add(new FE_Camera());
             testCamera.PivotEntity = mario;
             CurrentScene.Camera = testCamera;
-            testCamera.Scale.X = 4;
-            testCamera.Scale.Y = 4;
+            testCamera.Scale.X = 2;
+            testCamera.Scale.Y = 2;
 
-            mario2.Position = new Vector2(32, 32);
-            mario2.Scale = new Vector2(4, 4);
+            marioPhys.Velocity = new Vector2(50, 25);
+
+            marioPhys.Position = new Vector2(-64, -64);
+            mario2Phys.Position = new Vector2(0, -32);
+
+            Console.WriteLine(CurrentScene.PhysicsWorld.BodyCount);
 
             FE_Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             FE_Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
             FE_Input.AddAction("move_up", Keys.Up, Buttons.LeftThumbstickUp);
             FE_Input.AddAction("move_down", Keys.Down, Buttons.LeftThumbstickDown);
-
-            Console.WriteLine(CurrentScene.EntityList.Count);
         }
 
         public override void UpdateGame(float delta)
         {
+            base.UpdateGame(delta);
             var player = CurrentScene.Get<FE_TransformEntity>("Mario");
             if (FE_Input.IsActionPressed("move_right"))
                 player.Position.X += 1f;
@@ -61,8 +69,6 @@ namespace FerrumModules.Tests
                 player.Position.Y -= 1f;
             else if (FE_Input.IsActionPressed("move_down"))
                 player.Position.Y += 1f;
-
-            base.UpdateGame(delta);
         }
     }
 }

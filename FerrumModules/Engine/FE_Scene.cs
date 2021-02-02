@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
+using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
+
+using Box2DSharp.Dynamics;
+
 
 namespace FerrumModules.Engine
 {
     public class FE_Scene : FE_ActiveElement
     {
         public List<FE_Entity> EntityList { get; private set; } = new List<FE_Entity>();
+        public Queue<FE_Entity> DeletionQueue = new Queue<FE_Entity>();
 
         private readonly Dictionary<string, FE_Entity> _entityNameDict = new Dictionary<string, FE_Entity>();
         public FE_Camera Camera = new FE_Camera();
 
-        public Queue<FE_Entity> DeletionQueue = new Queue<FE_Entity>();
+        public World PhysicsWorld { get; private set; } = new World(new Vector2(0, 10));
 
         public FE_Scene()
         {
@@ -22,6 +25,8 @@ namespace FerrumModules.Engine
 
         public override void Update(float delta)
         {
+            PhysicsWorld.Step(1.0f / 60.0f, 6, 2);
+
             foreach (var e in DeletionQueue) Remove(e);
             DeletionQueue.Clear();
 

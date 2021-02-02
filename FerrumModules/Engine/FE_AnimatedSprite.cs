@@ -35,7 +35,7 @@ namespace FerrumModules.Engine
                 if (CurrentFrame >= CurrentAnimation.frames.Count)
                     CurrentFrame = CurrentAnimation.frames[CurrentAnimation.loopPoint];
                 else
-                    CurrentFrame += 1;
+                    CurrentFrame++;
                 
                 _currentFrameTime = 0;
             }

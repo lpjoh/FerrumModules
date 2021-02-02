@@ -33,7 +33,6 @@ namespace FerrumModules.Engine
         {
             if (!typeof(EnumType).IsEnum) { throw new ArgumentException(nameof(layerEnum)); }
             RenderLayer = (int)(object)layerEnum;
-            Console.WriteLine(RenderLayer);
         }
 
         public virtual void Exit() { Scene.DeletionQueue.Enqueue(this); }

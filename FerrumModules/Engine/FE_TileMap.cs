@@ -3,9 +3,10 @@ using System.IO;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 
 using TiledSharp;
+using Box2DSharp.Dynamics;
+using Box2DSharp.Collision.Shapes;
 
 namespace FerrumModules.Engine
 {
@@ -23,6 +24,46 @@ namespace FerrumModules.Engine
             ChunkHeight = chunkHeight;
             Centered = false;
             LoadTMX(mapFilePath);
+        }
+
+        public override void Init()
+        {
+            //TODO: Abstract collision creation, update when scaled
+            base.Init();
+            var boxBodyDef = new BodyDef { BodyType = BodyType.StaticBody };
+
+            for (int y = 0; y < mapValues.Count; y++)
+            {
+                int consecutiveTiles = 0;
+                Vector2 boxPosition = Vector2.Zero;
+                for (int x = 0; x < mapValues[0].Count; x++)
+                {
+                    if (IsTileSolid(x, y))
+                    {
+                        if (consecutiveTiles == 0)
+                        {
+                            boxPosition = new Vector2(x, y) * new Vector2(TileWidth, TileHeight) * Scale + Position;
+                        }
+                        
+                        consecutiveTiles++;
+                    }
+                    if ((!IsTileSolid(x, y) || x == mapValues[0].Count - 1) && consecutiveTiles != 0)
+                    {
+                        var boxScale = new Vector2(consecutiveTiles * TileWidth * Scale.X, TileHeight * Scale.Y) / 2;
+                        boxBodyDef.Position = new System.Numerics.Vector2(boxPosition.X, boxPosition.Y);
+                        var boxBody = Scene.PhysicsWorld.CreateBody(boxBodyDef);
+                        PolygonShape dynamicBox = new PolygonShape();
+                        dynamicBox.SetAsBox(boxScale.X, boxScale.Y, new System.Numerics.Vector2(boxScale.X, boxScale.Y), 0.0f);
+                        FixtureDef fixtureDef = new FixtureDef
+                        {
+                            Shape = dynamicBox
+                        };
+
+                        boxBody.CreateFixture(fixtureDef);
+                        consecutiveTiles = 0;
+                    }
+                }
+            }
         }
 
         public void LoadTMX(string mapFilePath)
@@ -72,7 +113,7 @@ namespace FerrumModules.Engine
                             for (int tileX = 0; tileX < ChunkWidth; tileX++)
                             {
                                 if (scaledChunkPositionX + tileX >= mapValues[scaledChunkPositionY + tileY].Count) break;
-                                if (mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX] >= 0)
+                                if (IsTileSolid(scaledChunkPositionX + tileX, scaledChunkPositionY + tileY))
                                 {
                                     Position = (
                                         new Vector2(tileX * TileWidth, tileY * TileHeight) +
@@ -88,6 +129,13 @@ namespace FerrumModules.Engine
                     }
                 }
             }
+        }
+
+        private bool IsTileSolid(int x, int y)
+        {
+            if (x > mapValues[0].Count || y > mapValues.Count) return false;
+            if (x < 0 || y < 0) return false;
+            return mapValues[y][x] >= 0;
         }
     }
 }
