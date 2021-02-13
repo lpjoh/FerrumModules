@@ -5,7 +5,7 @@ namespace FerrumModules.Engine
 {
     class FE_PhysicsEntity : FE_Entity
     {
-        private Body PhysicsBody;
+        protected Body PhysicsBody;
         public readonly FE_TransformEntity PuppetEntity;
 
         public Microsoft.Xna.Framework.Vector2 Position

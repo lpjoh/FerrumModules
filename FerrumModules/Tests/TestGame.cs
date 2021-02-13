@@ -10,7 +10,7 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FE_Engine
     {
-        public TestGame() : base(640, 240) { }
+        public TestGame() : base(1920, 1080) { }
 
         public enum RenderLayers { TileLayer, EnemyLayer, PlayerLayer }
 
@@ -59,16 +59,14 @@ namespace FerrumModules.Tests
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene.Get<FE_TransformEntity>("Mario");
+            var player = CurrentScene.Get<FE_PhysicsEntity>("MarioPhys");
             if (FE_Input.IsActionPressed("move_right"))
-                player.Position.X += 1f;
+                player.Velocity = new Vector2(player.Velocity.X + 1.0f, player.Velocity.Y);
             else if (FE_Input.IsActionPressed("move_left"))
-                player.Position.X -= 1f;
+                player.Velocity = new Vector2(player.Velocity.X - 1.0f, player.Velocity.Y);
 
-            if (FE_Input.IsActionPressed("move_up"))
-                player.Position.Y -= 1f;
-            else if (FE_Input.IsActionPressed("move_down"))
-                player.Position.Y += 1f;
+            if (FE_Input.IsActionJustPressed("move_up"))
+                player.Velocity = new Vector2(player.Velocity.X, -100);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace FerrumModules.Engine
         private readonly Dictionary<string, FE_Entity> _entityNameDict = new Dictionary<string, FE_Entity>();
         public FE_Camera Camera = new FE_Camera();
 
-        public World PhysicsWorld { get; private set; } = new World(new Vector2(0, 10));
+        public World PhysicsWorld { get; private set; } = new World(new Vector2(0, 100));
 
         public FE_Scene()
         {
@@ -25,12 +25,11 @@ namespace FerrumModules.Engine
 
         public override void Update(float delta)
         {
-            PhysicsWorld.Step(1.0f / 60.0f, 6, 2);
-
             foreach (var e in DeletionQueue) Remove(e);
             DeletionQueue.Clear();
 
             foreach (var e in EntityList) e.Update(delta);
+            PhysicsWorld.Step(delta, 6, 2);
         }
 
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)

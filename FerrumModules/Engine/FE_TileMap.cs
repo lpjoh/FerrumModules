@@ -54,10 +54,7 @@ namespace FerrumModules.Engine
                         var boxBody = Scene.PhysicsWorld.CreateBody(boxBodyDef);
                         PolygonShape dynamicBox = new PolygonShape();
                         dynamicBox.SetAsBox(boxScale.X, boxScale.Y, new System.Numerics.Vector2(boxScale.X, boxScale.Y), 0.0f);
-                        FixtureDef fixtureDef = new FixtureDef
-                        {
-                            Shape = dynamicBox
-                        };
+                        FixtureDef fixtureDef = new FixtureDef { Shape = dynamicBox };
 
                         boxBody.CreateFixture(fixtureDef);
                         consecutiveTiles = 0;
