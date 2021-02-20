@@ -7,23 +7,23 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FerrumModules.Engine
 {
-    public class FE_Engine : Game
+    public class FerrumContext : Game
     {
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private RenderTarget2D _renderTarget;
         private readonly SpriteEffects _spriteBatchEffects;
 
-        protected FE_Scene CurrentScene;
+        protected Scene CurrentScene;
 
         private float renderWidth, renderHeight;
 
         private const string TextureDirectory = "Textures";
 
-        public FE_Engine(
+        public FerrumContext(
             int displayBufferWidth = 1280,
             int displayBufferHeight = 720,
-            FE_Scene startingScene = null,
+            Scene startingScene = null,
             string windowName = "Ferrum Engine")
         {
             _graphics = new GraphicsDeviceManager(this)
@@ -44,12 +44,12 @@ namespace FerrumModules.Engine
             _spriteBatchEffects = new SpriteEffects();
 
             if (startingScene == null)
-                ChangeScene(new FE_Scene());
+                ChangeScene(new Scene());
             else
                 ChangeScene(CurrentScene);
         }
 
-        public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : FE_Scene
+        public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : Scene
         {
             CurrentScene = scene;
             scene.Init();
@@ -83,7 +83,7 @@ namespace FerrumModules.Engine
                 string fileName = Path.GetFileNameWithoutExtension(file.Name);
 
                 var texture = Content.Load<Texture2D>(TextureDirectory + "/" + fileName);
-                FE_Assets.AddTexture(texture, fileName);
+                Assets.AddTexture(texture, fileName);
             }
 
             UpdateRenderSize();
@@ -109,7 +109,7 @@ namespace FerrumModules.Engine
             CurrentScene.Update(delta);
             UpdateGame(delta);
 
-            FE_Input.UpdateActionStates();
+            Input.UpdateActionStates();
         }
 
         public virtual void UpdateGame(float delta) { }
@@ -117,21 +117,20 @@ namespace FerrumModules.Engine
         protected override void Draw(GameTime gameTime)
         {
             var camera = CurrentScene.Camera;
-            var originalCameraPosition = camera.Position;
             
             if (camera.Centered)
             {
-                camera.Position -= new Vector2(
-                _renderTarget.Width / 2,
-                _renderTarget.Height / 2)
-                / CurrentScene.Camera.Scale;
+                camera.PositionOffset = new Vector2(
+                _renderTarget.Width,
+                _renderTarget.Height)
+                / CurrentScene.Camera.GlobalScale / (CurrentScene.Camera.GlobalScale * -2);
             }
 
             camera.BoundingBox = new Rectangle(
-                (int)camera.Position.X,
-                (int)camera.Position.Y,
-                (int)(_renderTarget.Width / camera.Scale.X + camera.Scale.X),
-                (int)(_renderTarget.Height / camera.Scale.Y + camera.Scale.Y));
+                (int)camera.GlobalPosition.X,
+                (int)camera.GlobalPosition.Y,
+                (int)(_renderTarget.Width / camera.ScaleOffset.X + camera.ScaleOffset.X),
+                (int)(_renderTarget.Height / camera.ScaleOffset.Y + camera.ScaleOffset.Y));
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
@@ -152,8 +151,6 @@ namespace FerrumModules.Engine
                 Color.White);
 
             _spriteBatch.End();
-
-            camera.Position = (Vector2)originalCameraPosition;
 
             base.Draw(gameTime);
         }

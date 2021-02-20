@@ -4,9 +4,9 @@ using System.Text;
 
 namespace FerrumModules.Engine
 {
-    class FE_KinematicEntity : FE_PhysicsEntity
+    class KinematicBody : RigidBody
     {
-        public FE_KinematicEntity(FE_TransformEntity puppetEntity) : base(puppetEntity) { }
+        public KinematicBody() : base() { }
         public override void Update(float delta)
         {
             PhysicsBody.SetAngularVelocity(0.0f);

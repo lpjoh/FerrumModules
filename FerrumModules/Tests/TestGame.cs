@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -8,9 +9,9 @@ using FerrumModules.Engine;
 
 namespace FerrumModules.Tests
 {
-    public class TestGame : FE_Engine
+    public class TestGame : FerrumContext
     {
-        public TestGame() : base(1920, 1080) { }
+        public TestGame() : base(1280, 720) { }
 
         public enum RenderLayers { TileLayer, EnemyLayer, PlayerLayer }
 
@@ -18,54 +19,54 @@ namespace FerrumModules.Tests
         {
             base.InitGame();
             var marioFrames = new List<int>() { 0, 1, 2, 3, 4 };
-            var marioAnim = new FE_Animation(marioFrames, 6);
+            var marioAnim = new Animation(marioFrames, 6);
 
-            var marioTexture = FE_Assets.Textures["mario"];
-            var mario = CurrentScene.Add(new FE_AnimatedSprite(marioTexture, 16, 16, marioAnim));
-            mario.SetRenderLayer(RenderLayers.PlayerLayer);
-            var mario2 = CurrentScene.Add(new FE_StaticSprite(marioTexture, 16, 16, 8));
-            mario2.SetRenderLayer(RenderLayers.EnemyLayer);
+            var marioTexture = Assets.Textures["mario"];
 
-            var testTileSet = CurrentScene.Add(new FE_TileMap("big"));
+            var testTileSet = CurrentScene.AddChild(new TileMap("big"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
 
-            var marioPhys = CurrentScene.Add(new FE_PhysicsEntity(mario));
+            var marioPhys = CurrentScene.AddChild(new RigidBody());
 
-            var mario2Phys = CurrentScene.Add(new FE_PhysicsEntity(mario2));
+            var mario2Phys = CurrentScene.AddChild(new RigidBody());
+
+            var mario = marioPhys.AddChild(new AnimatedSprite(marioTexture, 16, 16, marioAnim));
+            mario.SetRenderLayer(RenderLayers.PlayerLayer);
+            var mario2 = mario2Phys.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
+            mario2.SetRenderLayer(RenderLayers.EnemyLayer);
 
             mario.Name = "Mario";
             marioPhys.Name = "MarioPhys";
             mario2.Name = "Koopa";
+            mario2Phys.Name = "KoopaPhys";
 
-            var testCamera = CurrentScene.Add(new FE_Camera());
-            testCamera.PivotEntity = mario;
-            CurrentScene.Camera = testCamera;
-            testCamera.Scale.X = 2;
-            testCamera.Scale.Y = 2;
+            var testCamera = marioPhys.AddChild(new Camera());
+            testCamera.ScaleOffset = new Vector2(2, 2);
+            CurrentScene.Camera.Centered = true;
+            CurrentScene.Camera.PositionOffset = new Vector2(512, 512);
 
             marioPhys.Velocity = new Vector2(50, 25);
+            testCamera.AngleOffset = (float)Math.PI / 4;
 
-            marioPhys.Position = new Vector2(-64, -64);
-            mario2Phys.Position = new Vector2(0, -32);
+            marioPhys.PositionOffset = new Vector2(32, -64);
+            mario2Phys.PositionOffset = new Vector2(0, -32);
 
-            Console.WriteLine(CurrentScene.PhysicsWorld.BodyCount);
-
-            FE_Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
-            FE_Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
-            FE_Input.AddAction("move_up", Keys.Up, Buttons.LeftThumbstickUp);
-            FE_Input.AddAction("move_down", Keys.Down, Buttons.LeftThumbstickDown);
+            Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
+            Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
+            Input.AddAction("move_up", Keys.Up, Buttons.LeftThumbstickUp);
+            Input.AddAction("move_down", Keys.Down, Buttons.LeftThumbstickDown);
         }
 
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene.Get<FE_PhysicsEntity>("MarioPhys");
-            if (FE_Input.IsActionPressed("move_right"))
+            var player = CurrentScene.GetByName<RigidBody>("MarioPhys");
+            if (Input.IsActionPressed("move_right"))
                 player.Velocity = new Vector2(player.Velocity.X + 1.0f, player.Velocity.Y);
-            else if (FE_Input.IsActionPressed("move_left"))
+            else if (Input.IsActionPressed("move_left"))
                 player.Velocity = new Vector2(player.Velocity.X - 1.0f, player.Velocity.Y);
 
-            if (FE_Input.IsActionJustPressed("move_up"))
+            if (Input.IsActionJustPressed("move_up"))
                 player.Velocity = new Vector2(player.Velocity.X, -100);
         }
     }

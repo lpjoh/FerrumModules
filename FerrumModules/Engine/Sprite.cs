@@ -1,9 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace FerrumModules.Engine
 {
-    public abstract class FE_Sprite : FE_TransformEntity
+    public abstract class Sprite : Entity
     {
         public Texture2D Texture;
         private Rectangle srcRect = new Rectangle();
@@ -43,12 +44,12 @@ namespace FerrumModules.Engine
             }
         }
 
-        public FE_Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
+        public Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
 
-            Position = Vector2.Zero;
-            Scale = new Vector2(1.0f, 1.0f);
+            PositionOffset = Vector2.Zero;
+            ScaleOffset = new Vector2(1.0f, 1.0f);
 
             TileWidth = tileWidth;
             TileHeight = tileHeight;
@@ -57,16 +58,16 @@ namespace FerrumModules.Engine
         public Rectangle GetBoundingBox()
         {
             var boundingBox = new Rectangle(
-                    (int)Position.X,
-                    (int)Position.Y,
-                    (int)(TileWidth * Scale.X),
-                    (int)(TileWidth * Scale.Y)
+                    (int)GlobalPosition.X,
+                    (int)GlobalPosition.Y,
+                    (int)(TileWidth * ScaleOffset.X),
+                    (int)(TileWidth * ScaleOffset.Y)
                 );
 
             if (Centered)
             {
-                boundingBox.X -= (int)(TileWidth * Scale.X) / 2;
-                boundingBox.Y -= (int)(TileHeight * Scale.Y) / 2;
+                boundingBox.X -= (int)(TileWidth * ScaleOffset.X) / 2;
+                boundingBox.Y -= (int)(TileHeight * ScaleOffset.Y) / 2;
             }
 
             return boundingBox;
@@ -76,7 +77,7 @@ namespace FerrumModules.Engine
         {
             base.Render(spriteBatch, spriteBatchEffects);
 
-            bool isOnScreen = FE_Collision.RectsCollide(Scene.Camera.BoundingBox, GetBoundingBox());
+            bool isOnScreen = Collision.RectsCollide(Scene.Camera.BoundingBox, GetBoundingBox());
 
             if (Texture != null && isOnScreen)
             {
@@ -86,7 +87,7 @@ namespace FerrumModules.Engine
                     RenderPosition,
                     srcRect,
                     Color.White,
-                    Angle,
+                    RenderAngle,
                     renderOrigin,
                     RenderScale,
                     spriteBatchEffects,

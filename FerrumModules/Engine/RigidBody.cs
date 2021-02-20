@@ -1,36 +1,28 @@
-﻿using Box2DSharp.Collision.Shapes;
+﻿using System;
+using Box2DSharp.Collision.Shapes;
 using Box2DSharp.Dynamics;
 
 namespace FerrumModules.Engine
 {
-    class FE_PhysicsEntity : FE_Entity
+    class RigidBody : Entity
     {
         protected Body PhysicsBody;
-        public readonly FE_TransformEntity PuppetEntity;
 
-        public Microsoft.Xna.Framework.Vector2 Position
+        public override Microsoft.Xna.Framework.Vector2 PositionOffset
         {
             get
             {
                 var physicsPosition = PhysicsBody.GetPosition();
                 return new Microsoft.Xna.Framework.Vector2(physicsPosition.X, physicsPosition.Y);
             }
-            set
-            {
-                PhysicsBody.SetTransform(new System.Numerics.Vector2(value.X, value.Y), 0.0f);
-            }
+            set { PhysicsBody.SetTransform(new System.Numerics.Vector2(value.X, value.Y), 0.0f); }
         }
-        public float Angle
+        public override float AngleOffset
         {
-            get
-            {
-                return PhysicsBody.GetAngle();
-            }
-            set
-            {
-                PhysicsBody.SetTransform(PhysicsBody.GetPosition(), value);
-            }
+            get { return PhysicsBody.GetAngle(); }
+            set { PhysicsBody.SetTransform(PhysicsBody.GetPosition(), value); }
         }
+
         public Microsoft.Xna.Framework.Vector2 Velocity
         {
             get
@@ -38,15 +30,7 @@ namespace FerrumModules.Engine
                 var linearVelocity = PhysicsBody.LinearVelocity;
                 return new Microsoft.Xna.Framework.Vector2(linearVelocity.X, linearVelocity.Y);
             }
-            set
-            {
-                PhysicsBody.SetLinearVelocity(new System.Numerics.Vector2(value.X, value.Y));
-            }
-        }
-
-        public FE_PhysicsEntity(FE_TransformEntity puppetEntity)
-        {
-            PuppetEntity = puppetEntity;
+            set { PhysicsBody.SetLinearVelocity(new System.Numerics.Vector2(value.X, value.Y)); }
         }
 
         public override void Init()
@@ -68,12 +52,6 @@ namespace FerrumModules.Engine
             };
 
             PhysicsBody.CreateFixture(fixtureDef);
-        }
-
-        public override void Update(float delta)
-        {
-            PuppetEntity.Position = Position;
-            PuppetEntity.Angle = Angle;
         }
     }
 }

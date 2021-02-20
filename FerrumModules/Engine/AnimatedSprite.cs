@@ -3,13 +3,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
 {
-    public class FE_Animation
+    public class Animation
     {
         public IList<int> frames;
         public int FPS;
         public int loopPoint;
 
-        public FE_Animation(IList<int> frames, int FPS = 12, int loopPoint = 0)
+        public Animation(IList<int> frames, int FPS = 12, int loopPoint = 0)
         {
             this.frames = frames;
             this.FPS = FPS;
@@ -17,12 +17,12 @@ namespace FerrumModules.Engine
         }
     }
 
-    public class FE_AnimatedSprite : FE_Sprite
+    public class AnimatedSprite : Sprite
     {
-        private readonly FE_Animation CurrentAnimation;
+        private readonly Animation CurrentAnimation;
         private float _currentFrameTime;
 
-        public FE_AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, FE_Animation startingAnimation)
+        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, Animation startingAnimation)
             : base(texture, tileWidth, tileHeight)
         {
             CurrentAnimation = startingAnimation;

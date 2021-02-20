@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FerrumModules.Engine
 {
-    public static class FE_Input
+    public static class Input
     {
         private struct PlayerButton
         {

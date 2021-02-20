@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
 {
-    public static class FE_Assets
+    public static class Assets
     {
         public static Dictionary<string, Texture2D> Textures { get; private set; } = new Dictionary<string, Texture2D>();
 

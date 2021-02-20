@@ -10,7 +10,7 @@ using Box2DSharp.Collision.Shapes;
 
 namespace FerrumModules.Engine
 {
-    public class FE_TileMap : FE_Sprite
+    public class TileMap : Sprite
     {
         private readonly List<List<int>> mapValues = new List<List<int>>();
         public int Width { get; private set; }
@@ -18,7 +18,7 @@ namespace FerrumModules.Engine
         private static int ChunkWidth;
         private static int ChunkHeight;
 
-        public FE_TileMap(string mapFilePath, int chunkWidth = 16, int chunkHeight = 16) : base(null, 0, 0)
+        public TileMap(string mapFilePath, int chunkWidth = 16, int chunkHeight = 16) : base(null, 0, 0)
         {
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
@@ -42,14 +42,14 @@ namespace FerrumModules.Engine
                     {
                         if (consecutiveTiles == 0)
                         {
-                            boxPosition = new Vector2(x, y) * new Vector2(TileWidth, TileHeight) * Scale + Position;
+                            boxPosition = new Vector2(x, y) * new Vector2(TileWidth, TileHeight) * ScaleOffset + PositionOffset;
                         }
                         
                         consecutiveTiles++;
                     }
                     if ((!IsTileSolid(x, y) || x == mapValues[0].Count - 1) && consecutiveTiles != 0)
                     {
-                        var boxScale = new Vector2(consecutiveTiles * TileWidth * Scale.X, TileHeight * Scale.Y) / 2;
+                        var boxScale = new Vector2(consecutiveTiles * TileWidth * ScaleOffset.X, TileHeight * ScaleOffset.Y) / 2;
                         boxBodyDef.Position = new System.Numerics.Vector2(boxPosition.X, boxPosition.Y);
                         var boxBody = Scene.PhysicsWorld.CreateBody(boxBodyDef);
                         PolygonShape dynamicBox = new PolygonShape();
@@ -67,7 +67,7 @@ namespace FerrumModules.Engine
         {
             var mapFile = new TmxMap("Content/Maps/" + mapFilePath + ".tmx");
 
-            Texture = FE_Assets.Textures[Path.GetFileNameWithoutExtension(mapFile.Tilesets[0].Image.Source)];
+            Texture = Assets.Textures[Path.GetFileNameWithoutExtension(mapFile.Tilesets[0].Image.Source)];
 
             TileWidth = mapFile.TileWidth;
             TileHeight = mapFile.TileHeight;
@@ -89,7 +89,7 @@ namespace FerrumModules.Engine
 
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
-            Vector2 originalPosition = Position;
+            Vector2 originalPosition = PositionOffset;
 
             for (int chunkY = 0; chunkY < Height / ChunkHeight + 1; chunkY++)
             {
@@ -97,11 +97,11 @@ namespace FerrumModules.Engine
                 for (int chunkX = 0; chunkX < Width / ChunkWidth + 1; chunkX++)
                 {
                     var scaledChunkPositionX = chunkX * ChunkWidth;
-                    if (FE_Collision.RectsCollide(Scene.Camera.BoundingBox, new Rectangle(
-                        (int)((scaledChunkPositionX + Position.X) * Scale.X * TileWidth),
-                        (int)((scaledChunkPositionY + Position.Y) * Scale.Y * TileHeight),
-                        (int)(ChunkWidth * TileWidth * Scale.X),
-                        (int)(ChunkHeight * TileHeight * Scale.Y)
+                    if (Collision.RectsCollide(Scene.Camera.BoundingBox, new Rectangle(
+                        (int)((scaledChunkPositionX + PositionOffset.X) * ScaleOffset.X * TileWidth),
+                        (int)((scaledChunkPositionY + PositionOffset.Y) * ScaleOffset.Y * TileHeight),
+                        (int)(ChunkWidth * TileWidth * ScaleOffset.X),
+                        (int)(ChunkHeight * TileHeight * ScaleOffset.Y)
                         ))) // Check collision if tile chunk is on screen
                     {
                         for (int tileY = 0; tileY < ChunkHeight; tileY++)
@@ -112,17 +112,17 @@ namespace FerrumModules.Engine
                                 if (scaledChunkPositionX + tileX >= mapValues[scaledChunkPositionY + tileY].Count) break;
                                 if (IsTileSolid(scaledChunkPositionX + tileX, scaledChunkPositionY + tileY))
                                 {
-                                    Position = (
+                                    PositionOffset = (
                                         new Vector2(tileX * TileWidth, tileY * TileHeight) +
                                         new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
-                                        ) * Scale + originalPosition;
+                                        ) * ScaleOffset + originalPosition;
 
                                     CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
                                     base.Render(spriteBatch, spriteBatchEffects);
                                 }
                             }
                         }
-                        Position = originalPosition;
+                        PositionOffset = originalPosition;
                     }
                 }
             }
