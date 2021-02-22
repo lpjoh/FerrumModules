@@ -5,47 +5,58 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
 {
-    public abstract class Entity // TODO: Add sorting by layer on render layer index change
+    public class Entity // TODO: Add sorting by layer on render layer index change
     {
-        public virtual Vector2 PositionOffset { get; set; } = new Vector2(0.0f, 0.0f);
-        public Vector2 GlobalPosition
+        public Vector2 PositionOffset { get; set; } = new Vector2(0.0f, 0.0f);
+        public Vector2 PositionOffsetRotated
         {
             get
             {
-                if (Parent == null) return PositionOffset;
-                return (Rotate(PositionOffset, Parent.GlobalPosition, GlobalAngle) + Parent.GlobalPosition) * GlobalScale;
+                return Rotation.Rotate(PositionOffset * GlobalScale, GlobalAngle);
             }
         }
-        public virtual Vector2 ScaleOffset { get; set; } = new Vector2(1.0f, 1.0f);
-        public Vector2 GlobalScale
+        public virtual Vector2 GlobalPosition
+        {
+            get
+            {
+                if (Parent == null) return PositionOffsetRotated;
+                return (PositionOffsetRotated + Parent.GlobalPosition);
+            }
+            set
+            {
+                if (Parent == null)
+                { PositionOffset = value; return; }
+                PositionOffset = value - Parent.GlobalPosition;
+            }
+        }
+        public Vector2 ScaleOffset { get; set; } = new Vector2(1.0f, 1.0f);
+        public virtual Vector2 GlobalScale
         {
             get
             {
                 if (Parent == null) return ScaleOffset;
-                return Parent.GlobalScale * ScaleOffset;
+                return ScaleOffset * Parent.GlobalScale;
+            }
+            set
+            {
+                if (Parent == null) PositionOffset = value;
+                else PositionOffset = value - Parent.GlobalPosition;
             }
         }
-        public virtual float AngleOffset { get; set; } = 0.0f;
-        public float GlobalAngle
+        public float AngleOffset { get; set; } = 0.0f;
+        public virtual float GlobalAngle
         {
             get
             {
                 if (Parent == null) return AngleOffset;
                 return Parent.GlobalAngle + AngleOffset;
             }
+            set
+            {
+                if (Parent == null) AngleOffset = value;
+                else AngleOffset = value - Parent.GlobalAngle;
+            }
         }
-        public Vector2 Rotate(Vector2 v, Vector2 center, float angle)
-        {
-            var ca = (float)Math.Cos(angle);
-            var sa = (float)Math.Sin(angle);
-            var difference = v - center;
-            return new Vector2
-                (
-                    difference.X * ca - difference.Y * sa,
-                    difference.Y * ca + difference.X * sa
-                ) + center;
-        }
-
         public List<Entity> Children { get; private set; } = new List<Entity>();
         public Entity Parent { get; private set; }
         public Entity RootEntity
@@ -99,8 +110,10 @@ namespace FerrumModules.Engine
         }
         public virtual void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
-            RenderScale = GlobalScale * Scene.Camera.GlobalScale;
-            RenderPosition = (GlobalPosition - Scene.Camera.GlobalPosition) / GlobalScale * RenderScale;
+            var camera = Scene.Camera;
+            RenderScale = GlobalScale * camera.Zoom;
+            RenderAngle = GlobalAngle + camera.AngleOffset;
+            RenderPosition = Rotation.Rotate((GlobalPosition - camera.GlobalPosition) / GlobalScale * RenderScale, camera.AngleOffset);
             foreach (var c in Children) c.Render(spriteBatch, spriteBatchEffects);
         }
         public virtual void Exit()

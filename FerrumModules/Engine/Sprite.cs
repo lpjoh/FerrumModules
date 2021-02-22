@@ -78,10 +78,11 @@ namespace FerrumModules.Engine
             base.Render(spriteBatch, spriteBatchEffects);
 
             bool isOnScreen = Collision.RectsCollide(Scene.Camera.BoundingBox, GetBoundingBox());
+            isOnScreen = true;
 
             if (Texture != null && isOnScreen)
             {
-                Vector2 renderOrigin = Centered ? new Vector2(TileWidth, TileHeight) / 2 : Vector2.Zero;
+                Vector2 renderOrigin = Centered ? (new Vector2(TileWidth, TileHeight) / GlobalScale) / 2 * GlobalScale : Vector2.Zero;
                 spriteBatch.Draw(
                     Texture,
                     RenderPosition,

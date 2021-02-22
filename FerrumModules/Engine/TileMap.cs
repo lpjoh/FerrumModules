@@ -115,7 +115,7 @@ namespace FerrumModules.Engine
                                     PositionOffset = (
                                         new Vector2(tileX * TileWidth, tileY * TileHeight) +
                                         new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
-                                        ) * ScaleOffset + originalPosition;
+                                        ) + originalPosition;
 
                                     CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
                                     base.Render(spriteBatch, spriteBatchEffects);

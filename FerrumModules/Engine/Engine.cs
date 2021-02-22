@@ -116,21 +116,23 @@ namespace FerrumModules.Engine
 
         protected override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
             var camera = CurrentScene.Camera;
-            
+            var originalCameraOffset = camera.PositionOffset;
+
             if (camera.Centered)
             {
-                camera.PositionOffset = new Vector2(
-                _renderTarget.Width,
-                _renderTarget.Height)
-                / CurrentScene.Camera.GlobalScale / (CurrentScene.Camera.GlobalScale * -2);
+                camera.PositionOffset -=
+                    Rotation.Rotate(new Vector2(_renderTarget.Width, _renderTarget.Height), -camera.AngleOffset) / camera.Zoom / camera.GlobalScale / 2;
             }
 
+            Console.WriteLine(new Vector2(_renderTarget.Width, _renderTarget.Height) / 2 / camera.Zoom);
+
             camera.BoundingBox = new Rectangle(
-                (int)camera.GlobalPosition.X,
-                (int)camera.GlobalPosition.Y,
-                (int)(_renderTarget.Width / camera.ScaleOffset.X + camera.ScaleOffset.X),
-                (int)(_renderTarget.Height / camera.ScaleOffset.Y + camera.ScaleOffset.Y));
+                (int)(camera.GlobalPosition.X),
+                (int)(camera.GlobalPosition.Y),
+                (int)(_renderTarget.Width / camera.Zoom + 2),
+                (int)(_renderTarget.Height / camera.Zoom + 2));
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
@@ -151,8 +153,7 @@ namespace FerrumModules.Engine
                 Color.White);
 
             _spriteBatch.End();
-
-            base.Draw(gameTime);
+            camera.PositionOffset = originalCameraOffset;
         }
 
         public void OnWindowResize(Object sender, EventArgs e)

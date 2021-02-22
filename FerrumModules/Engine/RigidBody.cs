@@ -8,18 +8,25 @@ namespace FerrumModules.Engine
     {
         protected Body PhysicsBody;
 
-        public override Microsoft.Xna.Framework.Vector2 PositionOffset
+        public override Microsoft.Xna.Framework.Vector2 GlobalPosition
         {
             get
             {
                 var physicsPosition = PhysicsBody.GetPosition();
-                return new Microsoft.Xna.Framework.Vector2(physicsPosition.X, physicsPosition.Y);
+                var positionVector = new Microsoft.Xna.Framework.Vector2(physicsPosition.X, physicsPosition.Y);
+                if (Parent == null) return positionVector;
+                return positionVector + Parent.GlobalPosition;
             }
             set { PhysicsBody.SetTransform(new System.Numerics.Vector2(value.X, value.Y), 0.0f); }
         }
-        public override float AngleOffset
+        public override float GlobalAngle
         {
-            get { return PhysicsBody.GetAngle(); }
+            get
+            {
+                var angle = PhysicsBody.GetAngle();
+                if (Parent == null) return angle;
+                return angle + Parent.GlobalAngle;
+            }
             set { PhysicsBody.SetTransform(PhysicsBody.GetPosition(), value); }
         }
 
