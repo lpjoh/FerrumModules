@@ -91,19 +91,26 @@ namespace FerrumModules.Engine
         {
             Vector2 originalPosition = PositionOffset;
 
+            var chunkScaleFactorX = ScaleOffset.X * TileWidth;
+            var chunkScaleFactorY = ScaleOffset.Y * TileHeight;
+
             for (int chunkY = 0; chunkY < Height / ChunkHeight + 1; chunkY++)
             {
                 var scaledChunkPositionY = chunkY * ChunkHeight;
                 for (int chunkX = 0; chunkX < Width / ChunkWidth + 1; chunkX++)
                 {
                     var scaledChunkPositionX = chunkX * ChunkWidth;
-                    var chunkBoundingBox = new Rectangle
+                    var chunkBoundingBox = Rotation.RotatedRectAABB(new Rectangle
                         (
-                            (int)((scaledChunkPositionX + PositionOffset.X) * ScaleOffset.X * TileWidth),
-                            (int)((scaledChunkPositionY + PositionOffset.Y) * ScaleOffset.Y * TileHeight),
-                            (int)(ChunkWidth * TileWidth * ScaleOffset.X),
-                            (int)(ChunkHeight * TileHeight * ScaleOffset.Y)
-                        );
+                            (int)(scaledChunkPositionX * chunkScaleFactorX),
+                            (int)(scaledChunkPositionY * chunkScaleFactorY),
+                            (int)(ChunkWidth * chunkScaleFactorX),
+                            (int)(ChunkHeight * chunkScaleFactorY)
+                        ), GlobalAngle);
+
+                    chunkBoundingBox.X += (int)(PositionOffset.X * chunkScaleFactorX);
+                    chunkBoundingBox.Y += (int)(PositionOffset.Y * chunkScaleFactorY);
+
                     if (Collision.RectsCollide(Scene.Camera.BoundingBox, chunkBoundingBox)) // Check collision if tile chunk is on screen
                     {
                         for (int tileY = 0; tileY < ChunkHeight; tileY++)

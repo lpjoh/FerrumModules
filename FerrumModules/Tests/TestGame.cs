@@ -47,7 +47,7 @@ namespace FerrumModules.Tests
             var testCamera = marioPhys.AddChild(new Camera());
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 0.5f;
+            testCamera.Zoom = 1f;
             mario.PositionOffset = new Vector2(0, 0);
             testCamera.AngleOffset = Rotation.PI / 4;
 
@@ -74,7 +74,7 @@ namespace FerrumModules.Tests
             
             //CurrentScene.Camera.PositionOffset += new Vector2(0, 0.05f);
             CurrentScene.Camera.AngleOffset += (float)Math.PI / 600;
-            CurrentScene.Camera.Zoom += 0.01f;
+            //CurrentScene.Camera.Zoom += 0.01f;
 
             if (Input.IsActionPressed("move_right"))
                 player.Velocity = new Vector2(player.Velocity.X + 1.0f, player.Velocity.Y);
