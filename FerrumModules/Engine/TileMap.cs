@@ -97,12 +97,14 @@ namespace FerrumModules.Engine
                 for (int chunkX = 0; chunkX < Width / ChunkWidth + 1; chunkX++)
                 {
                     var scaledChunkPositionX = chunkX * ChunkWidth;
-                    if (Collision.RectsCollide(Scene.Camera.BoundingBox, new Rectangle(
-                        (int)((scaledChunkPositionX + PositionOffset.X) * ScaleOffset.X * TileWidth),
-                        (int)((scaledChunkPositionY + PositionOffset.Y) * ScaleOffset.Y * TileHeight),
-                        (int)(ChunkWidth * TileWidth * ScaleOffset.X),
-                        (int)(ChunkHeight * TileHeight * ScaleOffset.Y)
-                        ))) // Check collision if tile chunk is on screen
+                    var chunkBoundingBox = new Rectangle
+                        (
+                            (int)((scaledChunkPositionX + PositionOffset.X) * ScaleOffset.X * TileWidth),
+                            (int)((scaledChunkPositionY + PositionOffset.Y) * ScaleOffset.Y * TileHeight),
+                            (int)(ChunkWidth * TileWidth * ScaleOffset.X),
+                            (int)(ChunkHeight * TileHeight * ScaleOffset.Y)
+                        );
+                    if (Collision.RectsCollide(Scene.Camera.BoundingBox, chunkBoundingBox)) // Check collision if tile chunk is on screen
                     {
                         for (int tileY = 0; tileY < ChunkHeight; tileY++)
                         {
@@ -115,7 +117,7 @@ namespace FerrumModules.Engine
                                     PositionOffset = (
                                         new Vector2(tileX * TileWidth, tileY * TileHeight) +
                                         new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
-                                        ) + originalPosition;
+                                        + originalPosition) * GlobalScale;
 
                                     CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
                                     base.Render(spriteBatch, spriteBatchEffects);

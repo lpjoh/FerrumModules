@@ -60,5 +60,9 @@ namespace FerrumModules.Engine
 
             PhysicsBody.CreateFixture(fixtureDef);
         }
+        public override void Exit()
+        {
+            Scene.PhysicsWorld.BodyList.Remove(PhysicsBody);
+        }
     }
 }

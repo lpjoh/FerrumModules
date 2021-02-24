@@ -12,15 +12,25 @@ namespace FerrumModules.Engine
         {
             get
             {
-                return Rotation.Rotate(PositionOffset * GlobalScale, GlobalAngle);
+                if (Parent == null) return Rotation.Rotate(PositionOffset * ScaleOffset, AngleOffset);
+                return Rotation.Rotate(PositionOffset * Parent.GlobalScale, GlobalAngle);
             }
         }
+        public Vector2 GlobalPositionNoOffset
+        {
+            get
+            {
+                if (Parent == null) return Vector2.Zero;
+                return Parent.GlobalPosition;
+            }
+        }
+
         public virtual Vector2 GlobalPosition
         {
             get
             {
                 if (Parent == null) return PositionOffsetRotated;
-                return (PositionOffsetRotated + Parent.GlobalPosition);
+                return Parent.GlobalPosition + PositionOffsetRotated;
             }
             set
             {
@@ -119,6 +129,7 @@ namespace FerrumModules.Engine
         public virtual void Exit()
         { 
             Scene.DeletionQueue.Add(this);
+            foreach (var c in Children) c.Exit();
         }
 
         #region Child Management

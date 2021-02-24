@@ -1,13 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace FerrumModules.Engine
 {
     public abstract class Sprite : Entity
     {
         public Texture2D Texture;
-        private Rectangle srcRect = new Rectangle();
+        private Rectangle srcRect = new Microsoft.Xna.Framework.Rectangle();
 
         private int _tileWidth;
         public int TileWidth
@@ -44,6 +43,26 @@ namespace FerrumModules.Engine
             }
         }
 
+        public Rectangle BoundingBox
+        {
+            get
+            {
+                var boundingBox = new Rectangle(0, 0, (int)(TileWidth * ScaleOffset.X), (int)(TileHeight * ScaleOffset.Y));
+
+                if (Centered)
+                {
+                    boundingBox.X -= (int)(TileWidth * ScaleOffset.X) / 2;
+                    boundingBox.Y -= (int)(TileHeight * ScaleOffset.Y) / 2;
+                }
+
+                var rotatedRect = Rotation.RotatedRectAABB(boundingBox, GlobalAngle);
+                rotatedRect.X += (int)GlobalPosition.X;
+                rotatedRect.Y += (int)GlobalPosition.Y;
+
+                return rotatedRect;
+            }
+        }
+
         public Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
@@ -55,30 +74,11 @@ namespace FerrumModules.Engine
             TileHeight = tileHeight;
         }
 
-        public Rectangle GetBoundingBox()
-        {
-            var boundingBox = new Rectangle(
-                    (int)GlobalPosition.X,
-                    (int)GlobalPosition.Y,
-                    (int)(TileWidth * ScaleOffset.X),
-                    (int)(TileWidth * ScaleOffset.Y)
-                );
-
-            if (Centered)
-            {
-                boundingBox.X -= (int)(TileWidth * ScaleOffset.X) / 2;
-                boundingBox.Y -= (int)(TileHeight * ScaleOffset.Y) / 2;
-            }
-
-            return boundingBox;
-        }
-
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
             base.Render(spriteBatch, spriteBatchEffects);
 
-            bool isOnScreen = Collision.RectsCollide(Scene.Camera.BoundingBox, GetBoundingBox());
-            isOnScreen = true;
+            bool isOnScreen = Collision.RectsCollide(Scene.Camera.BoundingBox, BoundingBox);
 
             if (Texture != null && isOnScreen)
             {

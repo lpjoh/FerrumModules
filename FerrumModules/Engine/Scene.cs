@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Microsoft.Xna.Framework.Graphics;
 
 using Box2DSharp.Dynamics;
+using Box2DSharp.Collision.Shapes;
 
 
 namespace FerrumModules.Engine
@@ -20,6 +20,8 @@ namespace FerrumModules.Engine
             Camera = Scene.AddChild(new Camera());
             Camera.Centered = false;
         }
+
+        #region Entity Name Management
 
         public EntityType GetByName<EntityType>(string entityName) where EntityType : Entity
         {
@@ -45,6 +47,7 @@ namespace FerrumModules.Engine
 
             _childNameDict.Remove(entityName);
         }
+        #endregion
 
         public override void Update(float delta)
         {
@@ -52,7 +55,7 @@ namespace FerrumModules.Engine
             foreach (var e in DeletionQueue)
             {
                 if (HasName(e.Name)) DeregisterName(e.Name);
-                RemoveChild(e);
+                e.Parent?.RemoveChild(e);
             }
             
             DeletionQueue.Clear();

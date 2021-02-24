@@ -41,20 +41,22 @@ namespace FerrumModules.Tests
             var testTileSet = CurrentScene.AddChild(new TileMap("big"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             testTileSet.Name = "TileMap";
+            //testTileSet.ScaleOffset = new Vector2(1, 3);
+            //testTileSet.AngleOffset = Rotation.PI / 8;
 
             var testCamera = marioPhys.AddChild(new Camera());
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 2;
-            marioPhys.PositionOffset = new Vector2(16, 0);
-            testCamera.AngleOffset = Rotation.PI / 8;
+            testCamera.Zoom = 0.5f;
+            mario.PositionOffset = new Vector2(0, 0);
+            testCamera.AngleOffset = Rotation.PI / 4;
 
             marioPhys.Velocity = new Vector2(50, 25);
-            marioPhys.ScaleOffset = new Vector2(1, 1);
+            //mario.ScaleOffset = new Vector2(26.6666f, 26.6666f);
 
             mario2.PositionOffset = new Vector2(16, 0);
             mario3.PositionOffset = new Vector2(0, 16);
-            //mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
+            mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
 
             marioPhys.GlobalPosition = new Vector2(32, -64);
             mario2Phys.GlobalPosition = new Vector2(0, -32);
@@ -69,10 +71,10 @@ namespace FerrumModules.Tests
         {
             base.UpdateGame(delta);
             var player = CurrentScene.GetByName<RigidBody>("MarioPhys");
-            var tileSet = CurrentScene.GetByName<Entity>("TileMap");
-            //CurrentScene.Camera.Zoom += 0.01f;
-            //CurrentScene.Camera.PositionOffset = new Vector2(-16, -16);
-            //CurrentScene.Camera.AngleOffset += (float)Math.PI / 600;
+            
+            //CurrentScene.Camera.PositionOffset += new Vector2(0, 0.05f);
+            CurrentScene.Camera.AngleOffset += (float)Math.PI / 600;
+            CurrentScene.Camera.Zoom += 0.01f;
 
             if (Input.IsActionPressed("move_right"))
                 player.Velocity = new Vector2(player.Velocity.X + 1.0f, player.Velocity.Y);

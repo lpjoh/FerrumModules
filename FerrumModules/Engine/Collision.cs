@@ -1,9 +1,9 @@
 ﻿using System;
-
 using Microsoft.Xna.Framework;
 
 namespace FerrumModules.Engine
 {
+
     public static class Collision
     {
         public static bool RectsCollide(Rectangle rect1, Rectangle rect2)
