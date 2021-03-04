@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Box2DSharp.Collision.Shapes;
 using Box2DSharp.Dynamics;
 
@@ -7,28 +7,6 @@ namespace FerrumModules.Engine
     class RigidBody : Entity
     {
         protected Body PhysicsBody;
-
-        public override Microsoft.Xna.Framework.Vector2 GlobalPosition
-        {
-            get
-            {
-                var physicsPosition = PhysicsBody.GetPosition();
-                var positionVector = new Microsoft.Xna.Framework.Vector2(physicsPosition.X, physicsPosition.Y);
-                if (Parent == null) return positionVector;
-                return positionVector + Parent.GlobalPosition;
-            }
-            set { PhysicsBody.SetTransform(new System.Numerics.Vector2(value.X, value.Y), 0.0f); }
-        }
-        public override float GlobalAngle
-        {
-            get
-            {
-                var angle = PhysicsBody.GetAngle();
-                if (Parent == null) return angle;
-                return angle + Parent.GlobalAngle;
-            }
-            set { PhysicsBody.SetTransform(PhysicsBody.GetPosition(), value); }
-        }
 
         public Microsoft.Xna.Framework.Vector2 Velocity
         {

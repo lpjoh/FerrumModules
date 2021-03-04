@@ -6,7 +6,7 @@ namespace FerrumModules.Engine
     public abstract class Sprite : Entity
     {
         public Texture2D Texture;
-        private Rectangle srcRect = new Microsoft.Xna.Framework.Rectangle();
+        private Rectangle srcRect = new Rectangle();
 
         private int _tileWidth;
         public int TileWidth
@@ -92,7 +92,7 @@ namespace FerrumModules.Engine
                     renderOrigin,
                     RenderScale,
                     spriteBatchEffects,
-                    0.0f);
+                    RenderLayer);
             }
         }
     }

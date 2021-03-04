@@ -5,12 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using Box2DSharp.Collision;
-using Box2DSharp.Common;
-
 namespace FerrumModules.Engine
 {
-    public class FerrumContext : Game
+    public class Engine : Game
     {
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -23,7 +20,7 @@ namespace FerrumModules.Engine
 
         private const string TextureDirectory = "Textures";
 
-        public FerrumContext(
+        public Engine(
             int displayBufferWidth = 1280,
             int displayBufferHeight = 720,
             Scene startingScene = null,
@@ -55,6 +52,7 @@ namespace FerrumModules.Engine
         public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : Scene
         {
             CurrentScene = scene;
+            CurrentScene.Engine = this;
             scene.Init();
             return scene;
         }
@@ -129,7 +127,7 @@ namespace FerrumModules.Engine
             var cameraBoxSize = new Vector2(windowRectRotated.X, windowRectRotated.Y);
             var cameraBoxPosition = camera.PositionOffset + camera.GlobalPositionNoOffset - (cameraBoxSize / 2);
             
-            var cameraHalfWindowOffset = Rotation.Rotate(windowDimensions / 2, -camera.AngleOffset);
+            var cameraHalfWindowOffset = Rotation.Rotate(windowDimensions / camera.GlobalScale / 2, -camera.AngleOffset);
             if (camera.Centered)
             {
                 camera.PositionOffset -= cameraHalfWindowOffset;
@@ -146,9 +144,9 @@ namespace FerrumModules.Engine
                 (int)cameraBoxSize.Y);
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
+            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointWrap);
 
-            GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             CurrentScene.Render(_spriteBatch, _spriteBatchEffects);
 
             _spriteBatch.End();
@@ -156,18 +154,18 @@ namespace FerrumModules.Engine
             GraphicsDevice.SetRenderTarget(null);
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
 
-            _spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(
+            _spriteBatch.Draw(_renderTarget, new Rectangle(
                 _graphics.PreferredBackBufferWidth / 2 - (int)(renderWidth / 2),
                 _graphics.PreferredBackBufferHeight / 2 - (int)(renderHeight / 2),
                 (int)renderWidth,
                 (int)renderHeight),
-                Microsoft.Xna.Framework.Color.White);
+                Color.White);
 
             _spriteBatch.End();
             camera.PositionOffset = originalCameraOffset;
         }
 
-        public void OnWindowResize(Object sender, EventArgs e)
+        public void OnWindowResize(object sender, EventArgs e)
         {
             UpdateRenderSize();
         }

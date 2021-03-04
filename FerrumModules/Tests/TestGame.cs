@@ -9,7 +9,7 @@ using FerrumModules.Engine;
 
 namespace FerrumModules.Tests
 {
-    public class TestGame : FerrumContext
+    public class TestGame : Engine.Engine
     {
         public TestGame() : base(640, 480) { }
 
@@ -18,25 +18,20 @@ namespace FerrumModules.Tests
         public override void InitGame()
         {
             base.InitGame();
+            var testManager = CurrentScene.AddManager(new TestManager());
             var marioFrames = new List<int>() { 0, 1, 2, 3, 4 };
             var marioAnim = new Animation(marioFrames, 6);
             
             var marioTexture = Assets.Textures["mario"];
 
-            var marioPhys = CurrentScene.AddChild(new RigidBody());
-
-            var mario2Phys = CurrentScene.AddChild(new RigidBody());
-
-            var mario = marioPhys.AddChild(new AnimatedSprite(marioTexture, 16, 16, marioAnim));
+            var mario = CurrentScene.AddChild(new AnimatedSprite(marioTexture, 16, 16, marioAnim));
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
             var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
             var mario3 = mario2.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
             mario2.SetRenderLayer(RenderLayers.EnemyLayer);
 
             mario.Name = "Mario";
-            marioPhys.Name = "MarioPhys";
             mario2.Name = "Koopa";
-            mario2Phys.Name = "KoopaPhys";
 
             var testTileSet = CurrentScene.AddChild(new TileMap("big"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
@@ -44,22 +39,18 @@ namespace FerrumModules.Tests
             //testTileSet.ScaleOffset = new Vector2(1, 3);
             //testTileSet.AngleOffset = Rotation.PI / 8;
 
-            var testCamera = marioPhys.AddChild(new Camera());
+            var testCamera = mario.AddChild(new Camera());
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 1f;
+            testCamera.Zoom = 3f;
             mario.PositionOffset = new Vector2(0, 0);
             testCamera.AngleOffset = Rotation.PI / 4;
 
-            marioPhys.Velocity = new Vector2(50, 25);
             //mario.ScaleOffset = new Vector2(26.6666f, 26.6666f);
 
             mario2.PositionOffset = new Vector2(16, 0);
             mario3.PositionOffset = new Vector2(0, 16);
             mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
-
-            marioPhys.GlobalPosition = new Vector2(32, -64);
-            mario2Phys.GlobalPosition = new Vector2(0, -32);
 
             Input.AddAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             Input.AddAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
@@ -70,19 +61,21 @@ namespace FerrumModules.Tests
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene.GetByName<RigidBody>("MarioPhys");
+            var player = CurrentScene["Mario"];
             
             //CurrentScene.Camera.PositionOffset += new Vector2(0, 0.05f);
             CurrentScene.Camera.AngleOffset += (float)Math.PI / 600;
             //CurrentScene.Camera.Zoom += 0.01f;
 
             if (Input.IsActionPressed("move_right"))
-                player.Velocity = new Vector2(player.Velocity.X + 1.0f, player.Velocity.Y);
+                player.PositionOffset += new Vector2(1, 0);
             else if (Input.IsActionPressed("move_left"))
-                player.Velocity = new Vector2(player.Velocity.X - 1.0f, player.Velocity.Y);
+                player.PositionOffset -= new Vector2(1, 0);
 
-            if (Input.IsActionJustPressed("move_up"))
-                player.Velocity = new Vector2(player.Velocity.X, -100);
+            if (Input.IsActionPressed("move_up"))
+                player.AngleOffset += Rotation.PI / 16;
+            //if (Input.IsActionJustPressed("move_up"))
+            //    player.Velocity = new Vector2(player.Velocity.X, -100);
         }
     }
 }

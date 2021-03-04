@@ -7,6 +7,7 @@ namespace FerrumModules.Engine
     {
         public static Vector2 Rotate(Vector2 v, float angle)
         {
+            if (angle == 0.0f) return v;
             var ca = (float)Math.Cos(angle);
             var sa = (float)Math.Sin(angle);
             return new Vector2
