@@ -68,7 +68,7 @@ namespace FerrumModules.Engine
                 element.Init();
                 element.Initialized = true;
             }
-            
+
             return element;
         }
 
@@ -79,9 +79,9 @@ namespace FerrumModules.Engine
                 throw new Exception(doesNotExistExceptionText);
         }
 
-        protected List<BaseType> GetObjectsFromListWithBase<DerivedType, BaseType>(List<DerivedType> list)
-            where BaseType : DerivedType
-            where DerivedType : ActiveObject
+        protected List<BaseType> GetObjectsFromListWithBase<ElementType, BaseType>(List<ElementType> list)
+            where BaseType : ElementType
+            where ElementType : ActiveObject
         {
             var elementsWithBase = new List<BaseType>();
             foreach (var e in list)

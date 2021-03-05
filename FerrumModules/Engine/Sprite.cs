@@ -6,7 +6,7 @@ namespace FerrumModules.Engine
     public abstract class Sprite : Entity
     {
         public Texture2D Texture;
-        private Rectangle srcRect = new Rectangle();
+        private Rectangle sourceRect = new Rectangle();
 
         private int _tileWidth;
         public int TileWidth
@@ -15,7 +15,7 @@ namespace FerrumModules.Engine
             set
             {
                 _tileWidth = value;
-                srcRect.Width = _tileWidth;
+                sourceRect.Width = _tileWidth;
             }
         }
 
@@ -26,7 +26,7 @@ namespace FerrumModules.Engine
             set
             {
                 _tileHeight = value;
-                srcRect.Height = _tileHeight;
+                sourceRect.Height = _tileHeight;
             }
         }
 
@@ -38,8 +38,8 @@ namespace FerrumModules.Engine
             {
                 _currentFrame = value;
                 int framesPerRow = (Texture.Width / TileWidth);
-                srcRect.X = _currentFrame % framesPerRow * TileWidth;
-                srcRect.Y = _currentFrame / framesPerRow * TileHeight;
+                sourceRect.X = _currentFrame % framesPerRow * TileWidth;
+                sourceRect.Y = _currentFrame / framesPerRow * TileHeight;
             }
         }
 
@@ -47,17 +47,13 @@ namespace FerrumModules.Engine
         {
             get
             {
-                var boundingBox = new Rectangle(0, 0, (int)(TileWidth * ScaleOffset.X), (int)(TileHeight * ScaleOffset.Y));
+                var boxSize = new Vector2(TileWidth, TileHeight) * GlobalScale;
 
-                if (Centered)
-                {
-                    boundingBox.X -= (int)(TileWidth * ScaleOffset.X) / 2;
-                    boundingBox.Y -= (int)(TileHeight * ScaleOffset.Y) / 2;
-                }
-
-                var rotatedRect = Rotation.RotatedRectAABB(boundingBox, GlobalAngle);
-                rotatedRect.X += (int)GlobalPosition.X;
-                rotatedRect.Y += (int)GlobalPosition.Y;
+                var rotatedRect = Rotation.RotatedRectAABB(
+                    boxSize,
+                    Centered ? Vector2.Zero : boxSize / 2, 
+                    GlobalPosition,
+                    GlobalAngle);
 
                 return rotatedRect;
             }
@@ -66,9 +62,6 @@ namespace FerrumModules.Engine
         public Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
-
-            PositionOffset = Vector2.Zero;
-            ScaleOffset = new Vector2(1.0f, 1.0f);
 
             TileWidth = tileWidth;
             TileHeight = tileHeight;
@@ -86,13 +79,13 @@ namespace FerrumModules.Engine
                 spriteBatch.Draw(
                     Texture,
                     RenderPosition,
-                    srcRect,
-                    Color.White,
+                    sourceRect,
+                    GlobalColor * ((float)GlobalColor.A / 256),
                     RenderAngle,
                     renderOrigin,
                     RenderScale,
                     spriteBatchEffects,
-                    RenderLayer);
+                    GlobalRenderLayer);
             }
         }
     }

@@ -12,14 +12,9 @@ namespace FerrumModules.Engine
             get { return _entity; }
             set
             {
-                _entity.RemoveManager(this);
+                AddObjectToList(value.Managers, this, "Manager added which already exists in the entity.");
+                _entity?.RemoveManager(this);
                 _entity = value;
-                if (!Initialized)
-                {
-                    Init();
-                    Initialized = true;
-                }
-                _entity.AddManager(this);
             }
         }
         private string _name = "";

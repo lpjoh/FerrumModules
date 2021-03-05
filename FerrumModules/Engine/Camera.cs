@@ -6,6 +6,8 @@ namespace FerrumModules.Engine
     {
         public Rectangle BoundingBox;
         public float Zoom = 1.0f;
-        public override float GlobalAngle { get { return 0.0f; } }
+        public override Vector2 GlobalPosition => GlobalPositionNoOffset + PositionOffset;
+        public override float GlobalAngle => 0.0f;
+        
     }
 }

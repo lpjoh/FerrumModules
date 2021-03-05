@@ -8,7 +8,7 @@ namespace FerrumModules.Engine
     public class Entity : ActiveObject
     {
         #region Transformations
-        public Vector2 PositionOffset { get; set; } = new Vector2(0.0f, 0.0f);
+        public Vector2 PositionOffset = Vector2.Zero;
         public Vector2 PositionOffsetRotated
         {
             get
@@ -34,7 +34,7 @@ namespace FerrumModules.Engine
                 return Parent.GlobalPosition + positionOffset;
             }
         }
-        public Vector2 ScaleOffset { get; set; } = new Vector2(1.0f, 1.0f);
+        public Vector2 ScaleOffset = new Vector2(1.0f, 1.0f);
         public virtual Vector2 GlobalScale
         {
             get
@@ -43,7 +43,7 @@ namespace FerrumModules.Engine
                 return ScaleOffset * Parent.GlobalScale;
             }
         }
-        public float AngleOffset { get; set; } = 0.0f;
+        public float AngleOffset = 0.0f;
         public virtual float GlobalAngle
         {
             get
@@ -55,7 +55,26 @@ namespace FerrumModules.Engine
         protected Vector2 RenderPosition { get; private set; }
         protected Vector2 RenderScale { get; private set; }
         protected float RenderAngle { get; private set; }
-        public bool Centered = true;
+        public virtual bool Centered { get; set; } = true;
+
+        public Color ColorOffset = Color.White;
+        private float NormalizedByte(byte value) { return ((float)value + 1) / 256; }
+        public virtual Color GlobalColor
+        {
+            get
+            {
+                if (Parent == null) return ColorOffset;
+
+                var parentColor = Parent.GlobalColor;
+
+                var globalOpaque = new Color(
+                    ColorOffset.R * parentColor.R,
+                    ColorOffset.G * parentColor.G,
+                    ColorOffset.B * parentColor.B,
+                    NormalizedByte(ColorOffset.A) * NormalizedByte(parentColor.A));
+                return globalOpaque;
+            }
+        }
 
         #endregion
 
@@ -135,7 +154,7 @@ namespace FerrumModules.Engine
         {
             get { return RootEntity as Scene; }
         }
-        public Engine Engine
+        public FerrumEngine Engine
         {
             get { return Scene.Engine; }
         }
@@ -175,9 +194,8 @@ namespace FerrumModules.Engine
 
         public ManagerType AddManager<ManagerType>(ManagerType manager) where ManagerType : Manager
         {
-            AssertManagerNameIsUnique(manager.Name);
-            manager.Entity?.RemoveManager(manager);
-            return AddObjectToList(Managers, manager, "Manager added which already exists in the entity.");
+            manager.Entity = this;
+            return manager;
         }
 
         public void RemoveManager<ManagerType>(ManagerType manager) where ManagerType : Manager
@@ -198,11 +216,27 @@ namespace FerrumModules.Engine
             }
         }
 
-        public float RenderLayer { get; private set; } = 1.0f;
+        public float RenderLayerOffset { get; private set; } = 1.0f;
+        public float GlobalRenderLayer
+        {
+            get
+            {
+                if (Parent == null) return RenderLayerOffset;
+
+                var globalRenderLayer = 1.0f;
+                var workingParent = this;
+                while (workingParent.Parent != null)
+                {
+                    if (workingParent.RenderLayerOffset < globalRenderLayer) globalRenderLayer = workingParent.RenderLayerOffset;
+                    workingParent = workingParent.Parent;
+                }
+                return globalRenderLayer;
+            }
+        }
 
         public void SetRenderLayer<EnumType>(EnumType layerEnum) where EnumType : Enum
         {
-            RenderLayer = (float)((int)(object)layerEnum + 1) / Enum.GetNames(typeof(EnumType)).Length;
+            RenderLayerOffset = (float)((int)(object)layerEnum + 1) / Enum.GetNames(typeof(EnumType)).Length;
         }
 
         public bool Visible = true;

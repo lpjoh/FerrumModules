@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FerrumModules.Engine
 {
-    public class Engine : Game
+    public class FerrumEngine : Game
     {
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -20,7 +20,7 @@ namespace FerrumModules.Engine
 
         private const string TextureDirectory = "Textures";
 
-        public Engine(
+        public FerrumEngine(
             int displayBufferWidth = 1280,
             int displayBufferHeight = 720,
             Scene startingScene = null,
@@ -121,38 +121,30 @@ namespace FerrumModules.Engine
             var camera = CurrentScene.Camera;
             var originalCameraOffset = camera.PositionOffset;
 
-            var windowDimensions = new Vector2(_renderTarget.Width, _renderTarget.Height) / camera.Zoom;
-            var windowRectRotated = Rotation.RotatedRectSizeByCenter(windowDimensions, camera.AngleOffset);
+            var cameraBoxSize = new Vector2(_renderTarget.Width, _renderTarget.Height) / camera.Zoom;
+            var cameraHalfWindowOffset = Rotation.Rotate(cameraBoxSize, -camera.AngleOffset) / 2;
 
-            var cameraBoxSize = new Vector2(windowRectRotated.X, windowRectRotated.Y);
-            var cameraBoxPosition = camera.PositionOffset + camera.GlobalPositionNoOffset - (cameraBoxSize / 2);
+            camera.BoundingBox = Rotation.RotatedRectAABB(
+                cameraBoxSize,
+                camera.Centered ? Vector2.Zero : Rotation.Rotate(cameraHalfWindowOffset, -camera.AngleOffset),
+                camera.GlobalPosition,
+                camera.AngleOffset);
             
-            var cameraHalfWindowOffset = Rotation.Rotate(windowDimensions / camera.GlobalScale / 2, -camera.AngleOffset);
             if (camera.Centered)
             {
                 camera.PositionOffset -= cameraHalfWindowOffset;
             }
-            else
-            {
-                cameraBoxPosition += cameraHalfWindowOffset;
-            }
-
-            camera.BoundingBox = new Rectangle(
-                (int)cameraBoxPosition.X,
-                (int)cameraBoxPosition.Y,
-                (int)cameraBoxSize.X,
-                (int)cameraBoxSize.Y);
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
             _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointWrap);
 
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(CurrentScene.BackgroundColor);
             CurrentScene.Render(_spriteBatch, _spriteBatchEffects);
 
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointWrap);
 
             _spriteBatch.Draw(_renderTarget, new Rectangle(
                 _graphics.PreferredBackBufferWidth / 2 - (int)(renderWidth / 2),

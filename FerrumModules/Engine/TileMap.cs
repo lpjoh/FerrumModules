@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using Microsoft.Xna.Framework;
@@ -6,20 +7,20 @@ using Microsoft.Xna.Framework.Graphics;
 
 using TiledSharp;
 
+
 namespace FerrumModules.Engine
 {
     public class TileMap : Sprite
     {
+        public override float GlobalAngle => 0.0f;
+
         private readonly List<List<int>> mapValues = new List<List<int>>();
         public int Width { get; private set; }
         public int Height { get; private set; }
-        private static int ChunkWidth;
-        private static int ChunkHeight;
+        public bool Infinite = false;
 
-        public TileMap(string mapFilePath, int chunkWidth = 16, int chunkHeight = 16) : base(null, 0, 0)
+        public TileMap(string mapFilePath) : base(null, 0, 0)
         {
-            ChunkWidth = chunkWidth;
-            ChunkHeight = chunkHeight;
             Centered = false;
             LoadTMX(mapFilePath);
         }
@@ -52,57 +53,53 @@ namespace FerrumModules.Engine
         {
             Vector2 originalPosition = PositionOffset;
 
-            var chunkScaleFactorX = ScaleOffset.X * TileWidth;
-            var chunkScaleFactorY = ScaleOffset.Y * TileHeight;
+            var cameraBox = Scene.Camera.BoundingBox;
+            var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y);
+            var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 
-            for (int chunkY = 0; chunkY < Height / ChunkHeight + 1; chunkY++)
+            var globalTileSize = new Vector2(TileWidth, TileHeight) * GlobalScale;
+            var tileScaledGlobalPosition = GlobalPosition / globalTileSize;
+
+            var tileFrameStart = cameraBoxPosition / globalTileSize;
+            var tileFrameEnd = (cameraBoxPosition + cameraBoxSize) / globalTileSize;
+
+            var tileFrameStartX = (int)tileFrameStart.X - 1;
+            var tileFrameStartY = (int)tileFrameStart.Y - 1;
+            var tileFrameEndX = (int)tileFrameEnd.X + 1;
+            var tileFrameEndY = (int)tileFrameEnd.Y + 1;
+
+            for (var i = tileFrameStartY; i < tileFrameEndY; i++)
             {
-                var scaledChunkPositionY = chunkY * ChunkHeight;
-                for (int chunkX = 0; chunkX < Width / ChunkWidth + 1; chunkX++)
+                if (!Infinite)
                 {
-                    var scaledChunkPositionX = chunkX * ChunkWidth;
-                    var chunkBoundingBox = Rotation.RotatedRectAABB(new Rectangle
-                        (
-                            (int)(scaledChunkPositionX * chunkScaleFactorX),
-                            (int)(scaledChunkPositionY * chunkScaleFactorY),
-                            (int)(ChunkWidth * chunkScaleFactorX),
-                            (int)(ChunkHeight * chunkScaleFactorY)
-                        ), GlobalAngle);
-
-                    chunkBoundingBox.X += (int)(PositionOffset.X * chunkScaleFactorX);
-                    chunkBoundingBox.Y += (int)(PositionOffset.Y * chunkScaleFactorY);
-
-                    if (Collision.RectsCollide(Scene.Camera.BoundingBox, chunkBoundingBox)) // Check collision if tile chunk is on screen
+                    if (i >= mapValues.Count) break;
+                    if (i < tileScaledGlobalPosition.Y) continue;
+                }
+                for (var j = tileFrameStartX; j < tileFrameEndX; j++)
+                {
+                    int tileRowIndex, tileColumnIndex;
+                    if (!Infinite)
                     {
-                        for (int tileY = 0; tileY < ChunkHeight; tileY++)
-                        {
-                            if (scaledChunkPositionY + tileY >= mapValues.Count) break;
-                            for (int tileX = 0; tileX < ChunkWidth; tileX++)
-                            {
-                                if (scaledChunkPositionX + tileX >= mapValues[scaledChunkPositionY + tileY].Count) break;
-                                if (IsTileSolid(scaledChunkPositionX + tileX, scaledChunkPositionY + tileY))
-                                {
-                                    PositionOffset = (
-                                        new Vector2(tileX * TileWidth, tileY * TileHeight) +
-                                        new Vector2(scaledChunkPositionX * TileWidth, scaledChunkPositionY * TileHeight)
-                                        + originalPosition) * GlobalScale;
-
-                                    CurrentFrame = mapValues[scaledChunkPositionY + tileY][scaledChunkPositionX + tileX];
-                                    base.Render(spriteBatch, spriteBatchEffects);
-                                }
-                            }
-                        }
-                        PositionOffset = originalPosition;
+                        if (j >= mapValues[i].Count) break;
+                        if (j < tileScaledGlobalPosition.X) continue;
+                        tileRowIndex = i;
+                        tileColumnIndex = j;
+                    }
+                    else
+                    {
+                        tileRowIndex = Math.Abs(i) % mapValues.Count;
+                        tileColumnIndex = Math.Abs(j) % mapValues[tileRowIndex].Count;
+                    }
+                    PositionOffset = new Vector2(j, i) * globalTileSize;
+                    if (mapValues[tileRowIndex][tileColumnIndex] >= 0)
+                    {
+                        CurrentFrame = mapValues[tileRowIndex][tileColumnIndex];
+                        base.Render(spriteBatch, spriteBatchEffects);
                     }
                 }
             }
-        }
 
-        private bool IsTileSolid(int x, int y)
-        {
-            if (x > mapValues[0].Count || y > mapValues.Count) return false;
-            if (x < 0 || y < 0) return false;
-            return mapValues[y][x] >= 0;
+            PositionOffset = originalPosition;
         }
     }
 }

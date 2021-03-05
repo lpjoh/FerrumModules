@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using Microsoft.Xna.Framework;
 
 namespace FerrumModules.Engine
 {
@@ -7,7 +8,8 @@ namespace FerrumModules.Engine
     {
         public List<Entity> DeletionQueue = new List<Entity>();
         public Camera Camera;
-        public new Engine Engine;
+        public new FerrumEngine Engine;
+        public Color BackgroundColor = Color.Gray;
 
         public Scene()
         {

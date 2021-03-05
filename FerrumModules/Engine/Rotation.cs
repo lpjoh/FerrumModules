@@ -21,36 +21,45 @@ namespace FerrumModules.Engine
             get { return (float)Math.PI; }
         }
 
-        public static Rectangle RotatedRectAABB(Rectangle rectangle, float angle)
+        public static Rectangle RotatedRectAABB(Vector2 rectSize, Vector2 rotationCenterOffset, Vector2 positionOffset, float angle)
         {
-            var topLeft = Rotate(new Vector2(rectangle.X, rectangle.Y), angle);
-            var topRight = Rotate(new Vector2(rectangle.X + rectangle.Width, rectangle.Y), angle);
-            var bottomLeft = Rotate(new Vector2(rectangle.X, rectangle.Y + rectangle.Height), angle);
-            var bottomRight = Rotate(new Vector2(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height), angle);
+            Rectangle rotatedRectAABB;
 
-            float minX = Math.Min(topLeft.X, Math.Min(topRight.X, Math.Min(bottomLeft.X, bottomRight.X)));
-            float maxX = Math.Max(topLeft.X, Math.Max(topRight.X, Math.Max(bottomLeft.X, bottomRight.X)));
-            float minY = Math.Min(topLeft.Y, Math.Min(topRight.Y, Math.Min(bottomLeft.Y, bottomRight.Y)));
-            float maxY = Math.Max(topLeft.Y, Math.Max(topRight.Y, Math.Max(bottomLeft.Y, bottomRight.Y)));
-            Vector2 min = new Vector2(minX, minY);
-            Vector2 max = new Vector2(maxX, maxY);
+            var rectPosition = (rectSize / -2) + rotationCenterOffset;
 
-            return new Rectangle(
-                (int)min.X-1,
-                (int)min.Y - 1,
-                (int)max.X - (int)min.X + 1,
-                (int)max.Y - (int)min.Y + 1); // Adding one avoids truncation issues
-        }
+            if (angle == 0.0f)
+            {
+                rotatedRectAABB = new Rectangle((int)rectPosition.X, (int)rectPosition.Y, (int)rectSize.X, (int)rectSize.Y);
+            }
+            else
+            {
+                var topLeft = Rotate(rectPosition, angle);
+                var topRight = Rotate(new Vector2(rectPosition.X + rectSize.X, rectPosition.Y), angle);
+                var bottomLeft = Rotate(new Vector2(rectPosition.X, rectPosition.Y + rectSize.Y), angle);
+                var bottomRight = Rotate(new Vector2(rectPosition.X + rectSize.X, rectPosition.Y + rectSize.Y), angle);
 
-        public static Vector2 RotatedRectSizeByCenter(Vector2 rectSize, float angle)
-        {
-            var rectWidth = (int)rectSize.X;
-            var rectHeight = (int)rectSize.Y;
+                float minX = Math.Min(topLeft.X, Math.Min(topRight.X, Math.Min(bottomLeft.X, bottomRight.X)));
+                float maxX = Math.Max(topLeft.X, Math.Max(topRight.X, Math.Max(bottomLeft.X, bottomRight.X)));
+                float minY = Math.Min(topLeft.Y, Math.Min(topRight.Y, Math.Min(bottomLeft.Y, bottomRight.Y)));
+                float maxY = Math.Max(topLeft.Y, Math.Max(topRight.Y, Math.Max(bottomLeft.Y, bottomRight.Y)));
+                Vector2 min = new Vector2(minX, minY);
+                Vector2 max = new Vector2(maxX, maxY);
+                rotatedRectAABB = new Rectangle(
+                    (int)min.X,
+                    (int)min.Y,
+                    (int)max.X - (int)min.X,
+                    (int)max.Y - (int)min.Y);
+            }
 
-            var rotatedRect = RotatedRectAABB(
-                new Rectangle(rectWidth / -2, rectHeight / -2, rectWidth, rectHeight), angle);
+            rotatedRectAABB.X -= 1;
+            rotatedRectAABB.Y -= 1;
+            rotatedRectAABB.Width += 1;
+            rotatedRectAABB.Height += 1; // Adding one avoids truncation issues
 
-            return new Vector2(rotatedRect.Width, rotatedRect.Height);
+            rotatedRectAABB.X += (int)positionOffset.X;
+            rotatedRectAABB.Y += (int)positionOffset.Y;
+
+            return rotatedRectAABB;
         }
     }
 }
