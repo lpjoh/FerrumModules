@@ -27,7 +27,7 @@ namespace FerrumModules.Engine
                 previousButtonStates[playerButton.playerIndex] = GamePad.GetState(playerButton.playerIndex);
         }
 
-        private static bool IsActionPreviouslyPressed(string actionName)
+        private static bool ActionPreviouslyPressed(string actionName)
         {
             bool actionPreviouslyPressed = false;
 
@@ -39,17 +39,17 @@ namespace FerrumModules.Engine
             return actionPreviouslyPressed;
         }
 
-        public static bool IsActionJustPressed(string actionName)
+        public static bool ActionJustPressed(string actionName)
         {
-            return IsActionPressed(actionName) && !IsActionPreviouslyPressed(actionName);
+            return ActionPressed(actionName) && !ActionPreviouslyPressed(actionName);
         }
 
-        public static bool IsActionJustReleased(string actionName)
+        public static bool ActionJustReleased(string actionName)
         {
-            return !IsActionPressed(actionName) && IsActionPreviouslyPressed(actionName);
+            return !ActionPressed(actionName) && ActionPreviouslyPressed(actionName);
         }
 
-        public static bool IsActionPressed(string actionName)
+        public static bool ActionPressed(string actionName)
         {
             bool actionPressed = false;
 
@@ -62,20 +62,20 @@ namespace FerrumModules.Engine
             return actionPressed;
         }
 
-        public static void AddAction(string actionName, Keys key)
+        public static void SetAction(string actionName, Keys key)
         {
             keyboardDict[actionName] = key;
         }
 
-        public static void AddAction(string actionName, Buttons button, PlayerIndex playerIndex = PlayerIndex.One)
+        public static void SetAction(string actionName, Buttons button, PlayerIndex playerIndex = PlayerIndex.One)
         {
             buttonDict[actionName] = new PlayerButton{ playerIndex = playerIndex, button = button };
         }
 
-        public static void AddAction(string actionName, Keys key, Buttons button, PlayerIndex playerIndex = PlayerIndex.One)
+        public static void SetAction(string actionName, Keys key, Buttons button, PlayerIndex playerIndex = PlayerIndex.One)
         {
-            AddAction(actionName, key);
-            AddAction(actionName, button, playerIndex);
+            SetAction(actionName, key);
+            SetAction(actionName, button, playerIndex);
         }
 
         public static void RemoveAction(string actionName)

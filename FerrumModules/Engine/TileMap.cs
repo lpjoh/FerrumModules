@@ -49,6 +49,12 @@ namespace FerrumModules.Engine
             }
         }
 
+        private int SignConsciousModulus(int value, int divisor)
+        {
+            if (value >= 0) return value % divisor;
+            return (divisor - (-value % divisor)) % divisor;
+        }
+
         public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
         {
             Vector2 originalPosition = PositionOffset;
@@ -78,17 +84,17 @@ namespace FerrumModules.Engine
                 for (var j = tileFrameStartX; j < tileFrameEndX; j++)
                 {
                     int tileRowIndex, tileColumnIndex;
-                    if (!Infinite)
+                    if (Infinite)
+                    {
+                        tileRowIndex = SignConsciousModulus(i, mapValues.Count);
+                        tileColumnIndex = SignConsciousModulus(j, mapValues[tileRowIndex].Count);
+                    }
+                    else
                     {
                         if (j >= mapValues[i].Count) break;
                         if (j < tileScaledGlobalPosition.X) continue;
                         tileRowIndex = i;
                         tileColumnIndex = j;
-                    }
-                    else
-                    {
-                        tileRowIndex = Math.Abs(i) % mapValues.Count;
-                        tileColumnIndex = Math.Abs(j) % mapValues[tileRowIndex].Count;
                     }
                     PositionOffset = new Vector2(j, i) * globalTileSize;
                     if (mapValues[tileRowIndex][tileColumnIndex] >= 0)

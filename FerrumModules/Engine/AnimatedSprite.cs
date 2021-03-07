@@ -1,46 +1,110 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
 using Microsoft.Xna.Framework.Graphics;
 
 namespace FerrumModules.Engine
 {
-    public class Animation
+    public class SpriteAnimation
     {
-        public IList<int> frames;
-        public int FPS;
-        public int loopPoint;
+        public string Name { get; private set; }
 
-        public Animation(IList<int> frames, int FPS = 12, int loopPoint = 0)
+        public IList<int> Frames;
+        public int FPS;
+        public int LoopPoint;
+
+        public SpriteAnimation(string name, IList<int> frames, int fps = 12, int loopPoint = 0)
         {
-            this.frames = frames;
-            this.FPS = FPS;
-            this.loopPoint = loopPoint;
+            if (loopPoint >= frames.Count)
+                throw new Exception("The loop point of sprite animation \"" + name + "\" exceeded its frame count.");
+
+            Name = name;
+            Frames = frames;
+            FPS = fps;
+            LoopPoint = loopPoint;
         }
     }
 
     public class AnimatedSprite : Sprite
     {
-        private readonly Animation CurrentAnimation;
-        private float _currentFrameTime;
+        public string CurrentAnimationName { get => _currentAnimation.Name; }
 
-        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, Animation startingAnimation)
+        private readonly Dictionary<string, SpriteAnimation> _animations = new Dictionary<string, SpriteAnimation>();
+        private SpriteAnimation _currentAnimation;
+
+        private int _fIndex;
+        private int FrameIndex
+        {
+            get => _fIndex;
+            set
+            {
+                _fIndex = value;
+                CurrentFrame = _currentAnimation.Frames[_fIndex];
+            }
+        }
+
+        private float _timeSinceFrameChange;
+        private readonly Queue<string> _animationQueue = new Queue<string>();
+
+        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, SpriteAnimation startingAnimation)
             : base(texture, tileWidth, tileHeight)
         {
-            CurrentAnimation = startingAnimation;
+            AddAnimation(startingAnimation);
+            PlayAnimation(startingAnimation.Name);
         }
 
         public override void Update(float delta)
         {
-            if (_currentFrameTime >= 1 / (float)CurrentAnimation.FPS)
+            _timeSinceFrameChange += delta;
+
+            var fpsTime = 1f / _currentAnimation.FPS;
+            while (_timeSinceFrameChange >= fpsTime)
             {
-                if (CurrentFrame >= CurrentAnimation.frames.Count)
-                    CurrentFrame = CurrentAnimation.frames[CurrentAnimation.loopPoint];
-                else
-                    CurrentFrame++;
-                
-                _currentFrameTime = 0;
+                if (FrameIndex >= _currentAnimation.Frames.Count - 1)
+                {
+                    if (_animationQueue.Count > 0)
+                    {
+                        PlayAnimation(_animationQueue.Dequeue());
+                        Console.WriteLine("queue");
+                        break;
+                    }
+                    FrameIndex = _currentAnimation.LoopPoint;
+                }
+                else FrameIndex++;
+
+                _timeSinceFrameChange -= fpsTime;
             }
-            _currentFrameTime += delta;
+
             base.Update(delta);
+        }
+
+        public SpriteAnimation AddAnimation(SpriteAnimation animation)
+        {
+            var name = animation.Name;
+            if (_animations.ContainsKey(name)) throw new Exception("An animation with the name \"" + name + "\" already exists in the sprite.");
+            _animations[name] = animation;
+            return animation;
+        }
+
+        public void PlayAnimation(string name)
+        {
+            if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be played in the sprite.");
+
+            var referredAnimation = _animations[name];
+            if (_currentAnimation != referredAnimation)
+            {
+                _currentAnimation = referredAnimation;
+
+                FrameIndex = 0;
+                _timeSinceFrameChange = 0;
+            }
+        }
+
+        public void QueueAnimation(string name)
+        {
+            if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be queued in the sprite.");
+
+            _animationQueue.Enqueue(name);
         }
     }
 }
