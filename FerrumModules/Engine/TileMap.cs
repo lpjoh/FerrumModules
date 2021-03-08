@@ -64,7 +64,7 @@ namespace FerrumModules.Engine
             var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 
             var globalTileSize = new Vector2(TileWidth, TileHeight);
-            var tileFrameStart = (cameraBoxPosition - GlobalPosition) / globalTileSize / GlobalScale;
+            var tileFrameStart = (cameraBoxPosition * GlobalParallaxFactor - GlobalPosition) / globalTileSize / GlobalScale;
             var tileFrameEnd = cameraBoxSize / globalTileSize / GlobalScale + tileFrameStart;
 
             var tileFrameStartX = (int)tileFrameStart.X - 1;

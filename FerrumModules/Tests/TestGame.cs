@@ -65,7 +65,7 @@ namespace FerrumModules.Tests
             //testCamera.AngleOffset = Rotation.PI / 4;
             testCamera.PositionOffset.X = 40;
 
-            //testTileSet.ParallaxFactorOffset.X = 0.75f; testTileSet.ParallaxFactorOffset.Y = 0.75f;
+            testTileSet.ParallaxFactorOffset.X = 0.5f; testTileSet.ParallaxFactorOffset.Y = 0.5f;
 
             mario.Visible = true;
 
