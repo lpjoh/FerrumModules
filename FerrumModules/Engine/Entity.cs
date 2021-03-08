@@ -244,8 +244,8 @@ namespace FerrumModules.Engine
         public override void Init() { }
         public override void Update(float delta)
         {
-            foreach (var m in Managers) m.Update(delta);
-            foreach (var c in Children) c.Update(delta);
+            foreach (var m in Managers) if (!m.Paused) m.Update(delta);
+            foreach (var c in Children) if (!c.Paused) c.Update(delta);
         }
         public override void Exit()
         {

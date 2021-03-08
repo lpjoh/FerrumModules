@@ -25,9 +25,15 @@ namespace FerrumModules.Engine
         }
     }
 
+    public delegate void AnimationStarted(string animation);
+    public delegate void AnimationEnded(string animation);
+
     public class AnimatedSprite : Sprite
     {
         public string CurrentAnimationName { get => _currentAnimation.Name; }
+
+        public event AnimationStarted AnimationStarted;
+        public event AnimationEnded AnimationEnded;
 
         private readonly Dictionary<string, SpriteAnimation> _animations = new Dictionary<string, SpriteAnimation>();
         private SpriteAnimation _currentAnimation;
@@ -65,7 +71,6 @@ namespace FerrumModules.Engine
                     if (_animationQueue.Count > 0)
                     {
                         PlayAnimation(_animationQueue.Dequeue());
-                        Console.WriteLine("queue");
                         break;
                     }
                     FrameIndex = _currentAnimation.LoopPoint;
@@ -90,6 +95,8 @@ namespace FerrumModules.Engine
         {
             if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be played in the sprite.");
 
+            if (_currentAnimation != null) AnimationEnded?.Invoke(_currentAnimation.Name);
+            
             var referredAnimation = _animations[name];
             if (_currentAnimation != referredAnimation)
             {
@@ -98,6 +105,8 @@ namespace FerrumModules.Engine
                 FrameIndex = 0;
                 _timeSinceFrameChange = 0;
             }
+
+            AnimationStarted?.Invoke(name);
         }
 
         public void QueueAnimation(string name)

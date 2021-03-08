@@ -6,6 +6,7 @@ namespace FerrumModules.Engine
     public abstract class ActiveObject
     {
         public virtual string Name { get; set; }
+        public bool Paused;
 
         private bool _initalized = false;
         public bool Initialized

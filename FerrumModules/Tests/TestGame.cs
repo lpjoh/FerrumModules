@@ -21,8 +21,8 @@ namespace FerrumModules.Tests
             IsFixedTimeStep = true;
             TargetElapsedTime = TimeSpan.FromSeconds(1d / 60d);
 
-            //var testManager = CurrentScene.AddManager(new TestManager());
-            //testManager.Name = "Manager";
+            var testTimer = CurrentScene.AddManager(new Timer(1, true, true));
+            testTimer.Timeout += TestPrint;
 
             var idleFrames = new List<int>() { 3, 2, 1 };
             var idleAnim = new SpriteAnimation("idle", idleFrames, 3);
@@ -116,6 +116,10 @@ namespace FerrumModules.Tests
             //if (Input.IsActionPressed("move_up")) player.AngleOffset += Rotation.PI / 16;
             //if (Input.IsActionJustPressed("move_up"))
             //    player.Velocity = new Vector2(player.Velocity.X, -100);
+        }
+        public void TestPrint()
+        {
+            Console.WriteLine("This timer loops and autostarts!");
         }
     }
 }
