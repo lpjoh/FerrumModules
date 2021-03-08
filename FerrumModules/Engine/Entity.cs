@@ -52,6 +52,17 @@ namespace FerrumModules.Engine
                 return Parent.GlobalAngle + AngleOffset;
             }
         }
+
+        public Vector2 ParallaxFactorOffset = new Vector2(1, 1);
+        public Vector2 GlobalParallaxFactor
+        {
+            get
+            {
+                if (Parent == null) return ParallaxFactorOffset;
+                return Parent.GlobalParallaxFactor * ParallaxFactorOffset;
+            }
+        }
+
         protected Vector2 RenderPosition { get; private set; }
         protected Vector2 RenderScale { get; private set; }
         protected float RenderAngle { get; private set; }

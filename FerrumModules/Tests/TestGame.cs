@@ -10,7 +10,7 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FerrumEngine
     {
-        public TestGame() : base(640, 480) { }
+        public TestGame() : base(640, 360) { }
 
         public enum RenderLayers { TileLayer, PlayerLayer, EnemyLayer }
 
@@ -40,37 +40,38 @@ namespace FerrumModules.Tests
             mario.AddAnimation(runPostAnim);
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
 
-            var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
-            var mario3 = mario2.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
+            var mario2 = CurrentScene.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
+            var mario3 = CurrentScene.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
             mario2.SetRenderLayer(RenderLayers.EnemyLayer);
 
             mario.Name = "Mario";
             mario2.Name = "Koopa";
+            //mario.Centered = false;
 
-            var testTileSet = CurrentScene.AddChild(new TileMap("infinite"));
+            var testTileSet = mario2.AddChild(new TileMap("infinite"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             testTileSet.Name = "TileMap";
             testTileSet.PositionOffset.X = 64;
             testTileSet.Infinite = true;
-            //testTileSet.ScaleOffset = new Vector2(0.5f, 0.5f);
+            testTileSet.ScaleOffset = new Vector2(0.5f, 0.5f);
             //testTileSet.AngleOffset = Rotation.PI / 8;
 
             var testCamera = mario.AddChild(new Camera());
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 1f;
+            testCamera.Zoom = 4f;
             mario.PositionOffset = new Vector2(0, 0);
-            mario.ScaleOffset = new Vector2(3, 2);
-            testCamera.AngleOffset = Rotation.PI / 4;
-            testCamera.PositionOffset.X = 80;
+            //mario.ScaleOffset = new Vector2(3, 2);
+            //testCamera.AngleOffset = Rotation.PI / 4;
+            testCamera.PositionOffset.X = 40;
 
-            //mario.ScaleOffset = new Vector2(26.6666f, 26.6666f);
+            //testTileSet.ParallaxFactorOffset.X = 0.75f; testTileSet.ParallaxFactorOffset.Y = 0.75f;
 
             mario.Visible = true;
 
-            mario2.PositionOffset = new Vector2(8, 0);
+            mario2.PositionOffset = new Vector2(16, 0);
             mario3.PositionOffset = new Vector2(0, 16);
-            mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
+            //mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
 
             mario2.ColorOffset = new Color(Color.White, 0.5f);
 
@@ -86,6 +87,8 @@ namespace FerrumModules.Tests
             base.UpdateGame(delta);
             var player = CurrentScene["Mario"] as AnimatedSprite;
 
+            //Console.WriteLine(player.PositionOffset);
+
             //Console.WriteLine(CurrentScene.Camera.BoundingBox);
             //Console.WriteLine(player.GlobalPosition);
 
@@ -94,14 +97,20 @@ namespace FerrumModules.Tests
             //CurrentScene["Mario"].ScaleOffset.Y += 0.01f;
             //CurrentScene.Camera.Zoom += 0.01f;
 
-            var speed = 5;
+            var tileMap = CurrentScene["Koopa"]["TileMap"] as TileMap;
+            //tileMap.PositionOffset.X += 0.1f; tileMap.PositionOffset.Y += 0.1f;
+            //Console.WriteLine(tileMap.PositionOffset.X);
+
+            //tileMap.ParallaxFactorOffset.X -= 0.001f; tileMap.ParallaxFactorOffset.Y -= 0.001f;
+
+            var speed = 1;
 
             if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right"))
                 player.PlayAnimation("run");
             if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right"))
                 player.PlayAnimation("idle");
 
-            if (Input.ActionJustPressed("fire")) player.QueueAnimation("runPost");
+            if (Input.ActionJustPressed("fire")) tileMap.Infinite = !tileMap.Infinite;
 
             if (Input.ActionPressed("move_right"))
                 player.PositionOffset.X += speed;
@@ -119,7 +128,7 @@ namespace FerrumModules.Tests
         }
         public void TestPrint()
         {
-            Console.WriteLine("This timer loops and autostarts!");
+            //Console.WriteLine("This timer loops and autostarts!");
         }
     }
 }

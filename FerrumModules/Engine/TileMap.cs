@@ -63,11 +63,9 @@ namespace FerrumModules.Engine
             var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y);
             var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 
-            var globalTileSize = new Vector2(TileWidth, TileHeight) * GlobalScale;
-            var tileScaledGlobalPosition = GlobalPosition / globalTileSize;
-
-            var tileFrameStart = cameraBoxPosition / globalTileSize;
-            var tileFrameEnd = (cameraBoxPosition + cameraBoxSize) / globalTileSize;
+            var globalTileSize = new Vector2(TileWidth, TileHeight);
+            var tileFrameStart = (cameraBoxPosition - GlobalPosition) / globalTileSize / GlobalScale;
+            var tileFrameEnd = cameraBoxSize / globalTileSize / GlobalScale + tileFrameStart;
 
             var tileFrameStartX = (int)tileFrameStart.X - 1;
             var tileFrameStartY = (int)tileFrameStart.Y - 1;
@@ -79,10 +77,11 @@ namespace FerrumModules.Engine
                 if (!Infinite)
                 {
                     if (i >= mapValues.Count) break;
-                    if (i < tileScaledGlobalPosition.Y) continue;
+                    if (i < 0) continue;
                 }
                 for (var j = tileFrameStartX; j < tileFrameEndX; j++)
                 {
+
                     int tileRowIndex, tileColumnIndex;
                     if (Infinite)
                     {
@@ -92,11 +91,11 @@ namespace FerrumModules.Engine
                     else
                     {
                         if (j >= mapValues[i].Count) break;
-                        if (j < tileScaledGlobalPosition.X) continue;
+                        if (j < 0) continue;
                         tileRowIndex = i;
                         tileColumnIndex = j;
                     }
-                    PositionOffset = new Vector2(j, i) * globalTileSize;
+                    PositionOffset = (new Vector2(j, i) * globalTileSize) * GlobalScale + originalPosition;
                     if (mapValues[tileRowIndex][tileColumnIndex] >= 0)
                     {
                         CurrentFrame = mapValues[tileRowIndex][tileColumnIndex];

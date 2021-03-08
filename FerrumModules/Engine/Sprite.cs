@@ -71,7 +71,7 @@ namespace FerrumModules.Engine
         {
             base.Render(spriteBatch, spriteBatchEffects);
 
-            bool isOnScreen = Collision.RectsCollide(Scene.Camera.BoundingBox, BoundingBox);
+            bool isOnScreen = Collision.RectsCollide(BoundingBox, Scene.Camera.BoundingBox);
 
             if (Texture != null && isOnScreen)
             {
