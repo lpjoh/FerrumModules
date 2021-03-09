@@ -17,7 +17,19 @@ namespace FerrumModules.Engine
         private readonly List<List<int>> mapValues = new List<List<int>>();
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public bool Infinite = false;
+
+        public bool InfiniteX = false;
+        public bool InfiniteY = false;
+
+        public bool Infinite
+        {
+            get => InfiniteX || InfiniteY;
+            set
+            {
+                InfiniteX = value;
+                InfiniteY = value;
+            }
+        }
 
         public TileMap(string mapFilePath) : base(null, 0, 0)
         {
@@ -60,11 +72,11 @@ namespace FerrumModules.Engine
             Vector2 originalPosition = PositionOffset;
 
             var cameraBox = Scene.Camera.BoundingBox;
-            var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y);
+            var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y) * GlobalParallaxFactor;
             var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 
             var globalTileSize = new Vector2(TileWidth, TileHeight);
-            var tileFrameStart = (cameraBoxPosition * GlobalParallaxFactor - GlobalPosition) / globalTileSize / GlobalScale;
+            var tileFrameStart = (cameraBoxPosition - GlobalPosition) / globalTileSize / GlobalScale;
             var tileFrameEnd = cameraBoxSize / globalTileSize / GlobalScale + tileFrameStart;
 
             var tileFrameStartX = (int)tileFrameStart.X - 1;
@@ -74,28 +86,26 @@ namespace FerrumModules.Engine
 
             for (var i = tileFrameStartY; i < tileFrameEndY; i++)
             {
-                if (!Infinite)
+                int tileRowIndex;
+                if (InfiniteY) tileRowIndex = SignConsciousModulus(i, mapValues.Count);
+                else
                 {
                     if (i >= mapValues.Count) break;
                     if (i < 0) continue;
+                    tileRowIndex = i;
                 }
                 for (var j = tileFrameStartX; j < tileFrameEndX; j++)
                 {
 
-                    int tileRowIndex, tileColumnIndex;
-                    if (Infinite)
-                    {
-                        tileRowIndex = SignConsciousModulus(i, mapValues.Count);
-                        tileColumnIndex = SignConsciousModulus(j, mapValues[tileRowIndex].Count);
-                    }
+                    int tileColumnIndex;
+                    if (InfiniteX) tileColumnIndex = SignConsciousModulus(j, mapValues[tileRowIndex].Count);
                     else
                     {
-                        if (j >= mapValues[i].Count) break;
+                        if (j >= mapValues[tileRowIndex].Count) break;
                         if (j < 0) continue;
-                        tileRowIndex = i;
                         tileColumnIndex = j;
                     }
-                    PositionOffset = (new Vector2(j, i) * globalTileSize) * GlobalScale + originalPosition;
+                    PositionOffset = new Vector2(j, i) * globalTileSize * GlobalScale + originalPosition;
                     if (mapValues[tileRowIndex][tileColumnIndex] >= 0)
                     {
                         CurrentFrame = mapValues[tileRowIndex][tileColumnIndex];

@@ -12,7 +12,7 @@ namespace FerrumModules.Tests
     {
         public TestGame() : base(640, 360) { }
 
-        public enum RenderLayers { TileLayer, PlayerLayer, EnemyLayer }
+        public enum RenderLayers { BackgroundLayer, TileLayer, PlayerLayer, EnemyLayer }
 
         public override void InitGame()
         {
@@ -33,39 +33,48 @@ namespace FerrumModules.Tests
             var runPostFrames = new List<int>() { 7 };
             var runPostAnim = new SpriteAnimation("runPost", runPostFrames, 3);
 
-            var marioTexture = Assets.Textures["numbers"];
+            CurrentScene.BackgroundColor = Color.Goldenrod;
+
+            var marioTexture = Assets.Textures["mario"];
 
             var mario = CurrentScene.AddChild(new AnimatedSprite(marioTexture, 16, 16, idleAnim));
             mario.AddAnimation(runAnim);
             mario.AddAnimation(runPostAnim);
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
 
-            var mario2 = CurrentScene.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
-            var mario3 = CurrentScene.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
+            var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
+            var mario3 = mario2.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
             mario2.SetRenderLayer(RenderLayers.EnemyLayer);
 
             mario.Name = "Mario";
             mario2.Name = "Koopa";
             //mario.Centered = false;
 
-            var testTileSet = mario2.AddChild(new TileMap("infinite"));
+            var testTileSet = CurrentScene.AddChild(new TileMap("infinite"));
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             testTileSet.Name = "TileMap";
             testTileSet.PositionOffset.X = 64;
             testTileSet.Infinite = true;
-            testTileSet.ScaleOffset = new Vector2(0.5f, 0.5f);
             //testTileSet.AngleOffset = Rotation.PI / 8;
+
+            var testTileSet2 = CurrentScene.AddChild(new TileMap("big"));
+            testTileSet2.SetRenderLayer(RenderLayers.BackgroundLayer);
+            testTileSet2.Infinite = true;
+            testTileSet2.ScaleOffset = new Vector2(0.5f, 0.5f);
 
             var testCamera = mario.AddChild(new Camera());
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 4f;
+            testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
             //mario.ScaleOffset = new Vector2(3, 2);
-            //testCamera.AngleOffset = Rotation.PI / 4;
+            //testCamera.AngleOffset = Rotation.PI / 8;
             testCamera.PositionOffset.X = 40;
 
             testTileSet.ParallaxFactorOffset.X = 0.5f; testTileSet.ParallaxFactorOffset.Y = 0.5f;
+            testTileSet2.ParallaxFactorOffset.X = 0.25f; testTileSet2.ParallaxFactorOffset.Y = 0.25f;
+
+            testTileSet2.ColorOffset = new Color(Color.White, 0.5f);
 
             mario.Visible = true;
 
@@ -97,7 +106,7 @@ namespace FerrumModules.Tests
             //CurrentScene["Mario"].ScaleOffset.Y += 0.01f;
             //CurrentScene.Camera.Zoom += 0.01f;
 
-            var tileMap = CurrentScene["Koopa"]["TileMap"] as TileMap;
+            var tileMap = CurrentScene["TileMap"] as TileMap;
             //tileMap.PositionOffset.X += 0.1f; tileMap.PositionOffset.Y += 0.1f;
             //Console.WriteLine(tileMap.PositionOffset.X);
 
@@ -110,7 +119,7 @@ namespace FerrumModules.Tests
             if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right"))
                 player.PlayAnimation("idle");
 
-            if (Input.ActionJustPressed("fire")) tileMap.Infinite = !tileMap.Infinite;
+            if (Input.ActionJustPressed("fire")) tileMap.InfiniteY = !tileMap.InfiniteY;
 
             if (Input.ActionPressed("move_right"))
                 player.PositionOffset.X += speed;

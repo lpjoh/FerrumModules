@@ -69,7 +69,7 @@ namespace FerrumModules.Engine
         public virtual bool Centered { get; set; } = true;
 
         public Color ColorOffset = Color.White;
-        private float NormalizedByte(byte value) { return ((float)value + 1) / 256; }
+        private float NormalizedByte(byte value) => ((float)value + 1) / 256;
         public virtual Color GlobalColor
         {
             get
@@ -219,7 +219,7 @@ namespace FerrumModules.Engine
         private string _name = "";
         public override string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 Parent?.AssertChildNameIsUnique(value);
