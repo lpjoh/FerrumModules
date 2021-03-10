@@ -28,7 +28,8 @@ namespace FerrumModules.Engine
         public bool InfiniteX = false;
         public bool InfiniteY = false;
 
-        private readonly List<TileSet> tilesets = new List<TileSet>();
+        private static readonly Dictionary<string, List<TileSet>> mapFileTilesetsDict = new Dictionary<string, List<TileSet>>();
+        private List<TileSet> tilesets;
 
         public bool Infinite
         {
@@ -55,17 +56,21 @@ namespace FerrumModules.Engine
             Width = mapFile.Width;
             Height = mapFile.Height;
 
-            tilesets.Clear();
-            foreach (var tmxTileset in mapFile.Tilesets)
+            if (!mapFileTilesetsDict.ContainsKey(mapFilePath))
             {
-                var newTileset = new TileSet
+                var newTileSets = mapFileTilesetsDict[mapFilePath] = new List<TileSet>();
+                foreach (var tmxTileset in mapFile.Tilesets)
                 {
-                    Texture = Assets.Textures[Path.GetFileNameWithoutExtension(tmxTileset.Image.Source)],
-                    FirstGid = tmxTileset.FirstGid,
-                    LastGid = tmxTileset.FirstGid + (int)tmxTileset.TileCount - 1
-                };
-                tilesets.Add(newTileset);
+                    var newTileset = new TileSet
+                    {
+                        Texture = Assets.Textures[Path.GetFileNameWithoutExtension(tmxTileset.Image.Source)],
+                        FirstGid = tmxTileset.FirstGid,
+                        LastGid = tmxTileset.FirstGid + (int)tmxTileset.TileCount - 1
+                    };
+                    newTileSets.Add(newTileset);
+                }
             }
+            tilesets = mapFileTilesetsDict[mapFilePath];
 
             var tmxTileLayer = mapFile.TileLayers[tileLayerID];
             MapValues.Clear();
