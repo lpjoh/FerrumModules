@@ -87,6 +87,16 @@ namespace FerrumModules.Engine
             }
         }
 
+        public float OpacityOffset
+        {
+            get => NormalizedByte(ColorOffset.A);
+            set => ColorOffset = new Color(ColorOffset, value);
+        }
+        public float GlobalOpacity
+        {
+            get => NormalizedByte(GlobalColor.A);
+        }
+
         #endregion
 
         #region Children
@@ -276,7 +286,7 @@ namespace FerrumModules.Engine
             var camera = Scene.Camera;
             RenderScale = GlobalScale * camera.Zoom;
             RenderAngle = GlobalAngle + camera.AngleOffset;
-            RenderPosition = Rotation.Rotate((GlobalPosition - camera.GlobalPosition * GlobalParallaxFactor) / GlobalScale * RenderScale, camera.AngleOffset);
+            RenderPosition = Rotation.Rotate((GlobalPosition - camera.GlobalPosition) / GlobalScale * RenderScale, camera.AngleOffset);
         }
     }
 }

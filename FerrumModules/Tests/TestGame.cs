@@ -50,12 +50,14 @@ namespace FerrumModules.Tests
             mario2.Name = "Koopa";
             //mario.Centered = false;
 
-            var testTileSet = CurrentScene.AddChild(new TileMap("infinite"));
+            var testTileSet = CurrentScene.AddChild(new TileMap("mixed"));
+
             testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             testTileSet.Name = "TileMap";
-            testTileSet.PositionOffset.X = 64;
+            //testTileSet.PositionOffset.X = 64;
             testTileSet.Infinite = true;
             //testTileSet.AngleOffset = Rotation.PI / 8;
+            Console.WriteLine(testTileSet.PositionOffset);
 
             var testTileSet2 = CurrentScene.AddChild(new TileMap("big"));
             testTileSet2.SetRenderLayer(RenderLayers.BackgroundLayer);
@@ -68,7 +70,7 @@ namespace FerrumModules.Tests
             testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
             //mario.ScaleOffset = new Vector2(3, 2);
-            //testCamera.AngleOffset = Rotation.PI / 8;
+            testCamera.AngleOffset = Rotation.PI / 8;
             testCamera.PositionOffset.X = 40;
 
             testTileSet.ParallaxFactorOffset.X = 0.5f; testTileSet.ParallaxFactorOffset.Y = 0.5f;
