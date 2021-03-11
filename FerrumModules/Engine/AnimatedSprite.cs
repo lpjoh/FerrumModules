@@ -70,7 +70,7 @@ namespace FerrumModules.Engine
                 {
                     if (_animationQueue.Count > 0)
                     {
-                        PlayAnimation(_animationQueue.Dequeue());
+                        PlayAnimation(_animationQueue.Dequeue(), false);
                         break;
                     }
                     FrameIndex = _currentAnimation.LoopPoint;
@@ -91,7 +91,7 @@ namespace FerrumModules.Engine
             return animation;
         }
 
-        public void PlayAnimation(string name)
+        public void PlayAnimation(string name, bool interceptQueue = true)
         {
             if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be played in the sprite.");
 
@@ -106,6 +106,7 @@ namespace FerrumModules.Engine
                 _timeSinceFrameChange = 0;
             }
 
+            if (interceptQueue) _animationQueue.Clear();
             AnimationStarted?.Invoke(name);
         }
 

@@ -43,6 +43,21 @@ namespace FerrumModules.Engine
             }
         }
 
+        public bool FlipX = false;
+        public bool FlipY = false;
+        private SpriteEffects FlipEffects
+        {
+            get
+            {
+                var spriteEffects = SpriteEffects.None;
+                if (FlipX) spriteEffects |= SpriteEffects.FlipHorizontally;
+                if (FlipY) spriteEffects |= SpriteEffects.FlipVertically;
+                return spriteEffects;
+            }
+        }
+
+        public bool Rotating = true;
+
         public Rectangle BoundingBox
         {
             get
@@ -67,9 +82,9 @@ namespace FerrumModules.Engine
             TileHeight = tileHeight;
         }
 
-        public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
+        public override void Render(SpriteBatch spriteBatch)
         {
-            base.Render(spriteBatch, spriteBatchEffects);
+            base.Render(spriteBatch);
 
             bool isOnScreen = Collision.RectsCollide(BoundingBox, Scene.Camera.BoundingBox);
 
@@ -81,10 +96,10 @@ namespace FerrumModules.Engine
                     RenderPosition,
                     sourceRect,
                     GlobalColor * ((float)GlobalColor.A / 256),
-                    RenderAngle,
+                    Rotating ? RenderAngle : -Scene.Camera.AngleOffset,
                     renderOrigin,
                     RenderScale,
-                    spriteBatchEffects,
+                    FlipEffects,
                     GlobalRenderLayer);
             }
         }

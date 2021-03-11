@@ -95,7 +95,7 @@ namespace FerrumModules.Engine
             return (divisor - (-value % divisor)) % divisor;
         }
 
-        public override void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
+        public override void Render(SpriteBatch spriteBatch)
         {
             Vector2 originalPosition = PositionOffset;
 
@@ -146,7 +146,7 @@ namespace FerrumModules.Engine
                     if (currentTileGid >= currentTileSet.FirstGid)
                     {
                         CurrentFrame = currentTileGid - currentTileSet.FirstGid;
-                        base.Render(spriteBatch, spriteBatchEffects);
+                        base.Render(spriteBatch);
                     }
                 }
             }

@@ -10,19 +10,18 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FerrumEngine
     {
-        public TestGame() : base(640, 360) { }
+        public TestGame() : base(640, 360, 2, 2, null, "Ferrum Mario Test") { }
 
         public enum RenderLayers { BackgroundLayer, TileLayer, PlayerLayer, EnemyLayer }
 
         public override void InitGame()
         {
             base.InitGame();
-
-            IsFixedTimeStep = true;
-            TargetElapsedTime = TimeSpan.FromSeconds(1d / 60d);
+            FPS = 60;
 
             var testTimer = CurrentScene.AddManager(new Timer(1, true, true));
             testTimer.Timeout += TestPrint;
+            testTimer.Name = "Timer";
 
             var idleFrames = new List<int>() { 3, 2, 1 };
             var idleAnim = new SpriteAnimation("idle", idleFrames, 3);
@@ -47,8 +46,11 @@ namespace FerrumModules.Tests
             mario2.SetRenderLayer(RenderLayers.EnemyLayer);
 
             mario.Name = "Mario";
+            mario.FlipX = true;
             mario2.Name = "Koopa";
+            mario2.Rotating = false;
             //mario.Centered = false;
+            //mario3.Exit();
 
             var testTileSet = CurrentScene.AddChild(new TileMap("mixed"));
 
@@ -70,11 +72,8 @@ namespace FerrumModules.Tests
             testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
             //mario.ScaleOffset = new Vector2(3, 2);
-            testCamera.AngleOffset = Rotation.PI / 8;
+            //testCamera.AngleOffset = Rotation.PI / 8;
             testCamera.PositionOffset.X = 40;
-
-            testTileSet.ParallaxFactorOffset.X = 0.5f; testTileSet.ParallaxFactorOffset.Y = 0.5f;
-            testTileSet2.ParallaxFactorOffset.X = 0.25f; testTileSet2.ParallaxFactorOffset.Y = 0.25f;
 
             testTileSet2.ColorOffset = new Color(Color.White, 0.5f);
 
@@ -104,7 +103,7 @@ namespace FerrumModules.Tests
             //Console.WriteLine(player.GlobalPosition);
 
             //CurrentScene.Camera.AngleOffset += Rotation.PI / 600;
-            //CurrentScene["Mario"].AngleOffset += Rotation.PI * delta;
+            player["Koopa"].AngleOffset += Rotation.PI * delta;
             //CurrentScene["Mario"].ScaleOffset.Y += 0.01f;
             //CurrentScene.Camera.Zoom += 0.01f;
 
@@ -121,7 +120,7 @@ namespace FerrumModules.Tests
             if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right"))
                 player.PlayAnimation("idle");
 
-            if (Input.ActionJustPressed("fire")) tileMap.InfiniteY = !tileMap.InfiniteY;
+            if (Input.ActionJustPressed("fire")) CurrentScene.GetManager<Manager>("Timer").Exit();
 
             if (Input.ActionPressed("move_right"))
                 player.PositionOffset.X += speed;
@@ -139,7 +138,7 @@ namespace FerrumModules.Tests
         }
         public void TestPrint()
         {
-            //Console.WriteLine("This timer loops and autostarts!");
+            Console.WriteLine("This timer loops and autostarts!");
         }
     }
 }

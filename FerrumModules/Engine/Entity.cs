@@ -53,19 +53,10 @@ namespace FerrumModules.Engine
             }
         }
 
-        public Vector2 ParallaxFactorOffset = new Vector2(1, 1);
-        public Vector2 GlobalParallaxFactor
-        {
-            get
-            {
-                if (Parent == null) return ParallaxFactorOffset;
-                return Parent.GlobalParallaxFactor * ParallaxFactorOffset;
-            }
-        }
+        protected Vector2 RenderPosition => Rotation.Rotate((GlobalPosition - Scene.Camera.GlobalPosition) / GlobalScale * RenderScale, -Scene.Camera.AngleOffset);
+        protected Vector2 RenderScale => GlobalScale * Scene.Camera.Zoom;
+        protected float RenderAngle => GlobalAngle - Scene.Camera.AngleOffset;
 
-        protected Vector2 RenderPosition { get; private set; }
-        protected Vector2 RenderScale { get; private set; }
-        protected float RenderAngle { get; private set; }
         public virtual bool Centered { get; set; } = true;
 
         public Color ColorOffset = Color.White;
@@ -77,7 +68,6 @@ namespace FerrumModules.Engine
                 if (Parent == null) return ColorOffset;
 
                 var parentColor = Parent.GlobalColor;
-
                 var globalOpaque = new Color(
                     ColorOffset.R * parentColor.R,
                     ColorOffset.G * parentColor.G,
@@ -120,12 +110,12 @@ namespace FerrumModules.Engine
 
         public Entity this[int i] { get => GetChild<Entity>(i); }
 
-        public EntityType GetChild<EntityType>(string name) where EntityType : Entity
+        public EntityType GetChild<EntityType>(string entityName) where EntityType : Entity
         {
             return (EntityType)GetFromObjectListByName(
-                Children, name,
+                Children, entityName,
                 "You cannot fetch an entity with no name.",
-                "Entity \"" + name + "\" was requested, but did not exist.");
+                "Entity \"" + entityName + "\" was requested from parent \"" + Name + "\", but did not exist.");
         }
 
         public Entity this[string name] { get => GetChild<Entity>(name); }
@@ -137,8 +127,6 @@ namespace FerrumModules.Engine
 
         public EntityType AddChild<EntityType>(EntityType entity) where EntityType : Entity
         {
-            AddObjectToList(Children, entity, "Child added which already exists in the parent.");
-            entity.Parent?.RemoveChild(entity);
             entity.Parent = this;
             return entity;
         }
@@ -157,7 +145,18 @@ namespace FerrumModules.Engine
 
         #region Parents
 
-        public Entity Parent { get; private set; }
+        private Entity _parent;
+        public Entity Parent
+        {
+            get => _parent;
+            set
+            {
+                value.AssertChildNameIsUnique(Name);
+                AddObjectToList(value.Children, this, "Child added which already exists in the parent.");
+                _parent?.RemoveChild(value);
+                _parent = value;
+            }
+        }
         public Entity RootEntity
         {
             get
@@ -171,14 +170,8 @@ namespace FerrumModules.Engine
                 return rootEntity;
             }
         }
-        public Scene Scene
-        {
-            get { return RootEntity as Scene; }
-        }
-        public FerrumEngine Engine
-        {
-            get { return Scene.Engine; }
-        }
+        public Scene Scene => RootEntity as Scene;
+        public FerrumEngine Engine => Scene.Engine;
 
         #endregion
 
@@ -200,12 +193,12 @@ namespace FerrumModules.Engine
             return (ManagerType)GetFromObjectListByIndex(Managers, index);
         }
 
-        public ManagerType GetManager<ManagerType>(string name) where ManagerType : Manager
+        public ManagerType GetManager<ManagerType>(string managerName) where ManagerType : Manager
         {
             return (ManagerType)GetFromObjectListByName(
-                Managers, name,
+                Managers, managerName,
                 "You cannot fetch a manager with no name.",
-                "Manager \"" + name + "\" was requested, but did not exist.");
+                "Manager \"" + managerName + "\" was requested from entity \"" + Name + "\", but did not exist.");
         }
 
         public void AssertManagerNameIsUnique(string name)
@@ -262,31 +255,26 @@ namespace FerrumModules.Engine
 
         public bool Visible = true;
 
-        public override void Init() { }
         public override void Update(float delta)
         {
-            foreach (var m in Managers) if (!m.Paused) m.Update(delta);
-            foreach (var c in Children) if (!c.Paused) c.Update(delta);
+            base.Update(delta);
+            foreach (var m in Managers)
+                if (!m.Paused) m.Update(delta);
+            foreach (var c in Children)
+                if (!c.Paused) c.Update(delta);
         }
         public override void Exit()
         {
-            Scene.DeletionQueue.Add(this);
+            base.Exit();
+
             foreach (var c in Children) c.Exit();
+            foreach (var m in Managers) m.Exit();
+            Scene.EntitiesToBeDeleted.Add(this);
         }
-        public virtual void Render(SpriteBatch spriteBatch, SpriteEffects spriteBatchEffects)
+        public virtual void Render(SpriteBatch spriteBatch)
         {
             if (!Visible) return;
-            foreach (var c in Children)
-            {
-                c.Render(spriteBatch, spriteBatchEffects);
-            }
-
-            if (GetType().GetMethod("Render").DeclaringType == typeof(Entity)) return;
-
-            var camera = Scene.Camera;
-            RenderScale = GlobalScale * camera.Zoom;
-            RenderAngle = GlobalAngle + camera.AngleOffset;
-            RenderPosition = Rotation.Rotate((GlobalPosition - camera.GlobalPosition) / GlobalScale * RenderScale, camera.AngleOffset);
+            foreach (var c in Children) c.Render(spriteBatch);
         }
     }
 }

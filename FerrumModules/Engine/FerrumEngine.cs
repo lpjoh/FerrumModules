@@ -12,24 +12,39 @@ namespace FerrumModules.Engine
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private RenderTarget2D _renderTarget;
-        private readonly SpriteEffects _spriteBatchEffects;
 
         protected Scene CurrentScene;
 
+        public int BufferWidth { get; private set; }
+        public int BufferHeight { get; private set; }
+
         private float renderWidth, renderHeight;
+
+        public float FPS
+        {
+            set
+            {
+                IsFixedTimeStep = true;
+                TargetElapsedTime = TimeSpan.FromSeconds(1.0f / value);
+            }
+        }
 
         private const string TextureDirectory = "Textures";
 
         public FerrumEngine(
-            int displayBufferWidth = 1280,
-            int displayBufferHeight = 720,
+            int bufferWidth = 1280,
+            int bufferHeight = 720,
+            float windowScaleX = 1.0f,
+            float windowScaleY = 1.0f,
             Scene startingScene = null,
             string windowName = "Ferrum Engine")
         {
+            BufferWidth = bufferWidth; BufferHeight = bufferHeight;
+
             _graphics = new GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = displayBufferWidth,
-                PreferredBackBufferHeight = displayBufferHeight
+                PreferredBackBufferWidth = (int)(BufferWidth * windowScaleX),
+                PreferredBackBufferHeight = (int)(BufferHeight * windowScaleY)
             };
 
             Window.AllowUserResizing = true;
@@ -40,8 +55,6 @@ namespace FerrumModules.Engine
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
-            _spriteBatchEffects = new SpriteEffects();
 
             if (startingScene == null)
                 ChangeScene(new Scene());
@@ -71,8 +84,8 @@ namespace FerrumModules.Engine
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _renderTarget = new RenderTarget2D(
                 GraphicsDevice,
-                GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                BufferWidth,
+                BufferHeight,
                 false,
                 GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
@@ -123,13 +136,13 @@ namespace FerrumModules.Engine
             var originalCameraOffset = camera.PositionOffset;
 
             var cameraBoxSize = new Vector2(_renderTarget.Width, _renderTarget.Height) / camera.Zoom;
-            var cameraHalfWindowOffset = Rotation.Rotate(cameraBoxSize, -camera.AngleOffset) / 2;
+            var cameraHalfWindowOffset = Rotation.Rotate(cameraBoxSize, camera.AngleOffset) / 2;
 
             camera.BoundingBox = Rotation.RotatedRectAABB(
                 cameraBoxSize,
-                camera.Centered ? Vector2.Zero : Rotation.Rotate(cameraHalfWindowOffset, -camera.AngleOffset),
+                camera.Centered ? Vector2.Zero : Rotation.Rotate(cameraHalfWindowOffset, camera.AngleOffset),
                 camera.GlobalPosition,
-                camera.AngleOffset);
+                -camera.AngleOffset);
             
             if (camera.Centered)
             {
@@ -140,7 +153,7 @@ namespace FerrumModules.Engine
             _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp);
 
             GraphicsDevice.Clear(CurrentScene.BackgroundColor);
-            CurrentScene.Render(_spriteBatch, _spriteBatchEffects);
+            CurrentScene.Render(_spriteBatch);
 
             _spriteBatch.End();
 

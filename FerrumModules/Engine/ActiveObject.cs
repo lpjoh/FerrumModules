@@ -31,9 +31,7 @@ namespace FerrumModules.Engine
             if (name == "") throw new Exception(noNameExceptionTest);
 
             foreach (var e in list)
-            {
                 if (e.Name == name) return e;
-            }
 
             throw new Exception(doesNotExistExceptionText);
         }
