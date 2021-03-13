@@ -25,12 +25,12 @@ namespace FerrumModules.Engine
             foreach (var e in EntitiesToBeDeleted) e.Parent?.RemoveChild(e);
             EntitiesToBeDeleted.Clear();
 
-            foreach (var m in ManagersToBeDeleted) m.Entity?.RemoveManager(m);
+            foreach (var m in ManagersToBeDeleted) m.Parent?.RemoveManager(m);
             ManagersToBeDeleted.Clear();
 
             base.Update(delta);
         }
 
-        public override void Exit() { throw new Exception("Don't delete a scene while it's in use by the engine."); }
+        public override void Exit() { if (Scene == this) throw new Exception("Don't delete a scene while it's in use."); }
     }
 }

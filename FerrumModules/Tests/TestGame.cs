@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using FerrumModules.Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-
-using FerrumModules.Engine;
+using System;
+using System.Collections.Generic;
 
 namespace FerrumModules.Tests
 {
@@ -18,6 +16,7 @@ namespace FerrumModules.Tests
         {
             base.InitGame();
             FPS = 60;
+            CurrentScene.Name = "Scene";
 
             var testTimer = CurrentScene.AddManager(new Timer(1, true, true));
             testTimer.Timeout += TestPrint;
@@ -36,46 +35,52 @@ namespace FerrumModules.Tests
 
             var marioTexture = Assets.Textures["mario"];
 
-            var mario = CurrentScene.AddChild(new AnimatedSprite(marioTexture, 16, 16, idleAnim));
+            var mario = new AnimatedSprite(marioTexture, 16, 16, idleAnim);
+            CurrentScene.AddChild(mario);
+            mario.Name = "Mario";
             mario.AddAnimation(runAnim);
             mario.AddAnimation(runPostAnim);
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
 
             var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
+            mario2.Name = "Koopa";
             var mario3 = mario2.AddChild(new StaticSprite(marioTexture, 16, 16, 5));
             mario2.SetRenderLayer(RenderLayers.EnemyLayer);
-
-            mario.Name = "Mario";
             mario.FlipX = true;
-            mario2.Name = "Koopa";
             mario2.Rotating = false;
             //mario.Centered = false;
             //mario3.Exit();
 
-            var testTileSet = CurrentScene.AddChild(new TileMap("mixed"));
+            //var testTileSet = CurrentScene.AddChild(new TileMap("mixed"));
 
-            testTileSet.SetRenderLayer(RenderLayers.TileLayer);
-            testTileSet.Name = "TileMap";
+            TileMap.ObjectNamespace = GetType().Namespace;
+            var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetAsEntityList());
+            CurrentScene["Punk"].SetRenderLayer(RenderLayers.PlayerLayer);
+
+            //testTileSet.SetRenderLayer(RenderLayers.TileLayer);
+            //testTileSet.Name = "TileMap";
             //testTileSet.PositionOffset.X = 64;
-            testTileSet.Infinite = true;
+            //testTileSet.Infinite = true;
             //testTileSet.AngleOffset = Rotation.PI / 8;
-            Console.WriteLine(testTileSet.PositionOffset);
+            //Console.WriteLine(testTileSet.PositionOffset);
 
             var testTileSet2 = CurrentScene.AddChild(new TileMap("big"));
             testTileSet2.SetRenderLayer(RenderLayers.BackgroundLayer);
             testTileSet2.Infinite = true;
             testTileSet2.ScaleOffset = new Vector2(0.5f, 0.5f);
+            //testTileSet2.ColorOffset = new Color(Color.White, 0.5f);
+            //testTileSet2.Visible = false;
+
 
             var testCamera = mario.AddChild(new Camera());
+            testCamera.Name = "Camera";
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
             testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
-            //mario.ScaleOffset = new Vector2(3, 2);
+            mario.ScaleOffset = new Vector2(2, 2);
             //testCamera.AngleOffset = Rotation.PI / 8;
             testCamera.PositionOffset.X = 40;
-
-            testTileSet2.ColorOffset = new Color(Color.White, 0.5f);
 
             mario.Visible = true;
 
@@ -94,8 +99,10 @@ namespace FerrumModules.Tests
 
         public override void UpdateGame(float delta)
         {
+            Console.WriteLine(CurrentScene["Mario"].Children.Count);
+
             base.UpdateGame(delta);
-            var player = CurrentScene["Mario"] as AnimatedSprite;
+            var player = CurrentScene["Punk"] as AnimatedSprite;
 
             //Console.WriteLine(player.PositionOffset);
 
@@ -103,11 +110,11 @@ namespace FerrumModules.Tests
             //Console.WriteLine(player.GlobalPosition);
 
             //CurrentScene.Camera.AngleOffset += Rotation.PI / 600;
-            player["Koopa"].AngleOffset += Rotation.PI * delta;
+            CurrentScene["Mario"]["Koopa"].AngleOffset += Rotation.PI * delta;
             //CurrentScene["Mario"].ScaleOffset.Y += 0.01f;
             //CurrentScene.Camera.Zoom += 0.01f;
 
-            var tileMap = CurrentScene["TileMap"] as TileMap;
+            //var tileMap = CurrentScene["TileMap"] as TileMap;
             //tileMap.PositionOffset.X += 0.1f; tileMap.PositionOffset.Y += 0.1f;
             //Console.WriteLine(tileMap.PositionOffset.X);
 
@@ -115,12 +122,12 @@ namespace FerrumModules.Tests
 
             var speed = 1;
 
-            if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right"))
-                player.PlayAnimation("run");
-            if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right"))
-                player.PlayAnimation("idle");
 
-            if (Input.ActionJustPressed("fire")) CurrentScene.GetManager<Manager>("Timer").Exit();
+
+            //if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right")) player.PlayAnimation("run");
+            //if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right")) player.PlayAnimation("idle");
+
+            if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
 
             if (Input.ActionPressed("move_right"))
                 player.PositionOffset.X += speed;

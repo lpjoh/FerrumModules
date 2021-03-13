@@ -65,7 +65,7 @@ namespace FerrumModules.Engine
         public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : Scene
         {
             CurrentScene = scene;
-            CurrentScene.Engine = this;
+            scene.Engine = this;
             scene.Init();
             return scene;
         }
@@ -150,7 +150,7 @@ namespace FerrumModules.Engine
             }
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
-            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
             GraphicsDevice.Clear(CurrentScene.BackgroundColor);
             CurrentScene.Render(_spriteBatch);
@@ -158,7 +158,7 @@ namespace FerrumModules.Engine
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.PointClamp);
 
             _spriteBatch.Draw(_renderTarget, new Rectangle(
                 _graphics.PreferredBackBufferWidth / 2 - (int)(renderWidth / 2),

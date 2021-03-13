@@ -9,11 +9,11 @@ namespace FerrumModules.Engine
     {
         public string Name { get; private set; }
 
-        public IList<int> Frames;
+        public List<int> Frames;
         public int FPS;
         public int LoopPoint;
 
-        public SpriteAnimation(string name, IList<int> frames, int fps = 12, int loopPoint = 0)
+        public SpriteAnimation(string name, List<int> frames, int fps = 12, int loopPoint = 0)
         {
             if (loopPoint >= frames.Count)
                 throw new Exception("The loop point of sprite animation \"" + name + "\" exceeded its frame count.");
@@ -52,32 +52,54 @@ namespace FerrumModules.Engine
         private float _timeSinceFrameChange;
         private readonly Queue<string> _animationQueue = new Queue<string>();
 
-        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, SpriteAnimation startingAnimation)
+        private void StartAnimation(SpriteAnimation startingAnimation)
+        {
+            if (startingAnimation != null)
+            {
+                AddAnimation(startingAnimation);
+                PlayAnimation(startingAnimation.Name);
+            }
+        }
+
+        public AnimatedSprite(SpriteAnimation startingAnimation = null) : base()
+        {
+            StartAnimation(startingAnimation);
+        }
+        public AnimatedSprite(int tileWidth, int tileHeight, SpriteAnimation startingAnimation = null)
+            : base(tileWidth, tileHeight)
+        {
+            StartAnimation(startingAnimation);
+        }
+        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, SpriteAnimation startingAnimation = null)
             : base(texture, tileWidth, tileHeight)
         {
-            AddAnimation(startingAnimation);
-            PlayAnimation(startingAnimation.Name);
+            StartAnimation(startingAnimation);
         }
+
+
 
         public override void Update(float delta)
         {
-            _timeSinceFrameChange += delta;
-
-            var fpsTime = 1f / _currentAnimation.FPS;
-            while (_timeSinceFrameChange >= fpsTime)
+            if (_currentAnimation != null)
             {
-                if (FrameIndex >= _currentAnimation.Frames.Count - 1)
-                {
-                    if (_animationQueue.Count > 0)
-                    {
-                        PlayAnimation(_animationQueue.Dequeue(), false);
-                        break;
-                    }
-                    FrameIndex = _currentAnimation.LoopPoint;
-                }
-                else FrameIndex++;
+                _timeSinceFrameChange += delta;
 
-                _timeSinceFrameChange -= fpsTime;
+                var fpsTime = 1f / _currentAnimation.FPS;
+                while (_timeSinceFrameChange >= fpsTime)
+                {
+                    if (FrameIndex >= _currentAnimation.Frames.Count - 1)
+                    {
+                        if (_animationQueue.Count > 0)
+                        {
+                            PlayAnimation(_animationQueue.Dequeue(), false);
+                            break;
+                        }
+                        FrameIndex = _currentAnimation.LoopPoint;
+                    }
+                    else FrameIndex++;
+
+                    _timeSinceFrameChange -= fpsTime;
+                }
             }
 
             base.Update(delta);
@@ -88,12 +110,15 @@ namespace FerrumModules.Engine
             var name = animation.Name;
             if (_animations.ContainsKey(name)) throw new Exception("An animation with the name \"" + name + "\" already exists in the sprite.");
             _animations[name] = animation;
+
+            if (_currentAnimation == null) PlayAnimation(name);
+
             return animation;
         }
 
         public void PlayAnimation(string name, bool interceptQueue = true)
         {
-            if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be played in the sprite.");
+            if (!_animations.ContainsKey(name)) throw new Exception("Animation \"" + name + "\" did not exist, and could not be played in sprite \"" + Name + "\".");
 
             if (_currentAnimation != null) AnimationEnded?.Invoke(_currentAnimation.Name);
             

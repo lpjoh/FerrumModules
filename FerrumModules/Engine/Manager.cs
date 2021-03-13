@@ -6,27 +6,22 @@ namespace FerrumModules.Engine
 {
     public class Manager : ActiveObject
     {
-        private Entity _entity;
-        public Entity Entity
+        public override Entity Parent
         {
-            get => _entity;
             set
             {
-                value.AssertManagerNameIsUnique(Name);
-                AddObjectToList(value.Managers, this, "Manager added which already exists in the entity.");
-                _entity?.RemoveManager(this);
-                _entity = value;
+                var oldSiblings = _parent?.Managers;
+                _parent = value;
+                AddObjectToList(value.Managers, oldSiblings, this);
             }
         }
-        public Scene Scene => Entity.Scene;
+        public Scene Scene => Parent.Scene;
 
-        private string _name = "";
         public override string Name
         {
-            get => _name;
             set
             {
-                Entity.AssertManagerNameIsUnique(value);
+                Parent.AssertManagerNameIsUnique(value);
                 _name = value;
             }
         }

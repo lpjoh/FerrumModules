@@ -74,6 +74,14 @@ namespace FerrumModules.Engine
             }
         }
 
+        public Sprite() { }
+
+        public Sprite(int tileWidth, int tileHeight)
+        {
+            TileWidth = tileWidth;
+            TileHeight = tileHeight;
+        }
+
         public Sprite(Texture2D loadTexture, int tileWidth, int tileHeight)
         {
             Texture = loadTexture;
@@ -90,17 +98,18 @@ namespace FerrumModules.Engine
 
             if (Texture != null && isOnScreen)
             {
+                var renderTransform = GetRenderTransform();
                 Vector2 renderOrigin = Centered ? (new Vector2(TileWidth, TileHeight) / GlobalScale) / 2 * GlobalScale : Vector2.Zero;
                 spriteBatch.Draw(
                     Texture,
-                    RenderPosition,
+                    renderTransform.Position,
                     sourceRect,
                     GlobalColor * ((float)GlobalColor.A / 256),
-                    Rotating ? RenderAngle : -Scene.Camera.AngleOffset,
+                    Rotating ? renderTransform.Angle : -Scene.Camera.AngleOffset,
                     renderOrigin,
-                    RenderScale,
+                    renderTransform.Scale,
                     FlipEffects,
-                    GlobalRenderLayer);
+                    0.0f);
             }
         }
     }

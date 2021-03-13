@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using Microsoft.Xna.Framework;
@@ -28,6 +29,9 @@ namespace FerrumModules.Engine
         public bool InfiniteX = false;
         public bool InfiniteY = false;
 
+        private const string mapFilesDirectory = "Content/Maps";
+
+        private static readonly Dictionary<string, TmxMap> mapFileDict = new Dictionary<string, TmxMap>();
         private static readonly Dictionary<string, List<TileSet>> mapFileTilesetsDict = new Dictionary<string, List<TileSet>>();
         private List<TileSet> tilesets;
 
@@ -41,16 +45,25 @@ namespace FerrumModules.Engine
             }
         }
 
-        public TileMap(string mapFilePath) : base(null, 0, 0)
+
+
+        public TileMap(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false) : base(null, 0, 0)
         {
-            Centered = false;
-            LoadTMX(mapFilePath);
+            LoadMapLayer(mapFilePath, tileLayerID, getNameFromFile);
         }
 
-        public void LoadTMX(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false)
+        private static TmxMap LoadTMXFile(string filePath)
         {
-            var mapFile = new TmxMap("Content/Maps/" + mapFilePath + ".tmx");
+            var fullFilePath = mapFilesDirectory + "/" + filePath + ".tmx";
+            if (!mapFileDict.ContainsKey(fullFilePath))
+                mapFileDict[fullFilePath] = new TmxMap(fullFilePath);
 
+            return mapFileDict[fullFilePath];
+        }
+
+        public void LoadMapLayer(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false)
+        {
+            var mapFile = LoadTMXFile(mapFilePath);
             TileWidth = mapFile.TileWidth;
             TileHeight = mapFile.TileHeight;
             Width = mapFile.Width;
@@ -97,6 +110,7 @@ namespace FerrumModules.Engine
 
         public override void Render(SpriteBatch spriteBatch)
         {
+            if (!Visible) return;
             Vector2 originalPosition = PositionOffset;
 
             var cameraBox = Scene.Camera.BoundingBox;
@@ -165,6 +179,68 @@ namespace FerrumModules.Engine
 
             Texture = tileSet.Texture;
             return tileSet;
+        }
+
+        public class FileLoadedScene
+        {
+            public List<TileMap> TileLayers = new List<TileMap>();
+            public List<List<Entity>> ObjectGroups = new List<List<Entity>>();
+
+            public List<Entity> GetAsEntityList()
+            {
+                var entityList = new List<Entity>();
+
+                foreach (var tl in TileLayers)
+                    entityList.Add(tl);
+                foreach (var og in ObjectGroups)
+                    foreach (var o in og) entityList.Add(o);
+
+                return entityList;
+            }
+        }
+
+        public static string ObjectNamespace = "";
+
+        public static FileLoadedScene LoadSceneFromFile<EnumType>(string mapFilePath, EnumType startingRenderLayer) where EnumType : Enum
+        {
+            if (ObjectNamespace == "") throw new Exception("Please set the object namespace.");
+
+            var mapFile = LoadTMXFile(mapFilePath);
+            var fileLoadedScene = new FileLoadedScene();
+
+            for (int i = 0; i < mapFile.TileLayers.Count; i++)
+            {
+                var newTileLayer = new TileMap(mapFilePath, i, true);
+                newTileLayer.SetRenderLayer(startingRenderLayer);
+                fileLoadedScene.TileLayers.Add(newTileLayer);
+            }
+
+            foreach (var objectGroup in mapFile.ObjectGroups)
+            {
+                var objectGroupOffset = new Vector2((float)objectGroup.OffsetX, (float)objectGroup.OffsetY);
+
+                var newEntityList = new List<Entity>();
+                fileLoadedScene.ObjectGroups.Add(newEntityList);
+
+                foreach (var o in objectGroup.Objects)
+                {
+                    var entityType = Type.GetType(ObjectNamespace + "." + o.Type);
+                    if (entityType == null || !entityType.IsSubclassOf(typeof(Entity)))
+                        throw new Exception("Entity in map file \"" + mapFilePath + "\" had an object labelled as type \"" +
+                            o.Type + "\", which is not a valid entity type in the namespace \"" + ObjectNamespace + "\".");
+
+                    var newEntity = (Entity)Activator.CreateInstance(entityType);
+
+                    newEntity.Name = o.Name;
+                    newEntity.Visible = o.Visible;
+                    newEntity.PositionOffset = new Vector2((float)o.X, (float)o.Y) + objectGroupOffset;
+                    newEntity.AngleOffset = (float)o.Rotation;
+
+                    newEntityList.Add(newEntity);
+                }
+            }
+
+            return fileLoadedScene;
         }
     }
 }

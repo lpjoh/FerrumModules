@@ -5,7 +5,8 @@ namespace FerrumModules.Engine
 {
     public abstract class ActiveObject
     {
-        public virtual string Name { get; set; }
+        protected string _name = "";
+        public virtual string Name { get => _name; set => _name = value; }
         public bool Paused;
 
         private bool _initalized = false;
@@ -14,6 +15,9 @@ namespace FerrumModules.Engine
             get { return _initalized; }
             set { if (_initalized == false) _initalized = true; }
         }
+
+        protected Entity _parent;
+        public virtual Entity Parent { get => _parent; set => _parent = value; }
 
         public virtual void Init() { }
         public virtual void Update(float delta) { }
@@ -25,22 +29,22 @@ namespace FerrumModules.Engine
             return list[index];
         }
 
-        protected ElementType GetFromObjectListByName<ElementType>(List<ElementType> list, string name, string noNameExceptionTest, string doesNotExistExceptionText)
+        protected ElementType GetFromObjectListByName<ElementType>(List<ElementType> list, string elementName)
             where ElementType : ActiveObject
         {
-            if (name == "") throw new Exception(noNameExceptionTest);
+            if (elementName == "") throw new Exception("You cannot fetch an object with no name from \"" + Name + "\".");
 
             foreach (var e in list)
-                if (e.Name == name) return e;
+                if (e.Name == elementName) return e;
 
-            throw new Exception(doesNotExistExceptionText);
+            throw new Exception("Object \"" + elementName + "\" was requested from \"" + Name + "\", but did not exist.");
         }
 
-        protected void AssertNameIsUniqueInObjectList<ElementType>(List<ElementType> list, string name, string exceptionText) where ElementType : ActiveObject
+        protected void AssertNameIsUniqueInObjectList<ElementType>(List<ElementType> list, string elementName) where ElementType : ActiveObject
         {
             foreach (var e in list)
             {
-                if (e.Name != "" && e.Name == name) throw new Exception(exceptionText);
+                if (!((e.Name == "") || (e.Name == null)) && (e.Name == elementName)) throw new Exception("An object named \"" + elementName + "\" already existed in \"" + Name + "\".");
             }
         }
 
@@ -55,11 +59,14 @@ namespace FerrumModules.Engine
             return false;
         }
 
-        protected NewObjectType AddObjectToList<ElementType, NewObjectType>(List<ElementType> list, NewObjectType element, string alreadyExistsExceptionText)
+        protected NewObjectType AddObjectToList<ElementType, NewObjectType>(List<ElementType> list, List<ElementType> oldList, NewObjectType element)
             where ElementType : ActiveObject
             where NewObjectType : ElementType
         {
-            if (ObjectListHas(list, element)) throw new Exception(alreadyExistsExceptionText);
+            if (ObjectListHas(list, element)) throw new Exception("Object \"" + element.Name + "\" added which already exists in \"" + Parent.Name + "\".");
+            AssertNameIsUniqueInObjectList(list, element.Name);
+
+            RemoveObjectFromList(oldList, element);
             list.Add(element);
 
             if (!element.Initialized)
@@ -71,11 +78,11 @@ namespace FerrumModules.Engine
             return element;
         }
 
-        protected void RemoveObjectFromList<ElementType>(List<ElementType> list, ElementType element, string doesNotExistExceptionText)
+        protected void RemoveObjectFromList<ElementType>(List<ElementType> list, ElementType element)
             where ElementType : ActiveObject
         {
-            if (!list.Remove(element))
-                throw new Exception(doesNotExistExceptionText);
+            if (list != null && !list.Remove(element))
+                throw new Exception("Object \"" + element.Name + "\" does not exist in \"" + Name + "\" or was already removed.");
         }
 
         protected List<BaseType> GetObjectsFromListWithBase<ElementType, BaseType>(List<ElementType> list)
