@@ -92,6 +92,7 @@ namespace FerrumModules.Engine
 
         public override void Render(SpriteBatch spriteBatch)
         {
+            if (!Visible) return;
             base.Render(spriteBatch);
 
             bool isOnScreen = Collision.RectsCollide(BoundingBox, Scene.Camera.BoundingBox);

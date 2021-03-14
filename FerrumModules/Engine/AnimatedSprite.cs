@@ -76,10 +76,9 @@ namespace FerrumModules.Engine
             StartAnimation(startingAnimation);
         }
 
-
-
         public override void Update(float delta)
         {
+            base.Update(delta);
             if (_currentAnimation != null)
             {
                 _timeSinceFrameChange += delta;
@@ -101,8 +100,6 @@ namespace FerrumModules.Engine
                     _timeSinceFrameChange -= fpsTime;
                 }
             }
-
-            base.Update(delta);
         }
 
         public SpriteAnimation AddAnimation(SpriteAnimation animation)

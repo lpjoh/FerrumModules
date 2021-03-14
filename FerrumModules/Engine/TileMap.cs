@@ -45,8 +45,6 @@ namespace FerrumModules.Engine
             }
         }
 
-
-
         public TileMap(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false) : base(null, 0, 0)
         {
             LoadMapLayer(mapFilePath, tileLayerID, getNameFromFile);

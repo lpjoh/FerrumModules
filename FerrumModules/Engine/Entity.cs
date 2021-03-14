@@ -289,7 +289,6 @@ namespace FerrumModules.Engine
         }
         public virtual void Render(SpriteBatch spriteBatch)
         {
-            if (!Visible) return;
             foreach (var c in Children) c.Render(spriteBatch);
         }
     }

@@ -11,6 +11,7 @@ namespace FerrumModules.Tests
         public TestGame() : base(640, 360, 2, 2, null, "Ferrum Mario Test") { }
 
         public enum RenderLayers { BackgroundLayer, TileLayer, PlayerLayer, EnemyLayer }
+        public AnimationTrack<Vector2> TestTrack;
 
         public override void InitGame()
         {
@@ -56,6 +57,17 @@ namespace FerrumModules.Tests
             TileMap.ObjectNamespace = GetType().Namespace;
             var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetAsEntityList());
             CurrentScene["Punk"].SetRenderLayer(RenderLayers.PlayerLayer);
+            //CurrentScene["Punk"].Visible = false;
+
+            TestTrack = new AnimationTrack<Vector2>();
+
+            TestTrack.Keyframes = new List<Keyframe<Vector2>>
+            {
+                new Keyframe<Vector2>(new Vector2(0, 0), 0.5f, Interpolation.Cosine),
+                new Keyframe<Vector2>(new Vector2(0, 32), 0.25f),
+                new Keyframe<Vector2>(new Vector2(32, 32), 0.5f),
+                new Keyframe<Vector2>(new Vector2(32, 0), 0.125f)
+            };
 
             //testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             //testTileSet.Name = "TileMap";
@@ -97,9 +109,11 @@ namespace FerrumModules.Tests
             Input.SetAction("fire", Keys.Space, Buttons.A);
         }
 
+        public float TestTime = 0.0f;
+
         public override void UpdateGame(float delta)
         {
-            Console.WriteLine(CurrentScene["Mario"].Children.Count);
+            //Console.WriteLine(TestTime);
 
             base.UpdateGame(delta);
             var player = CurrentScene["Punk"] as AnimatedSprite;
@@ -120,24 +134,25 @@ namespace FerrumModules.Tests
 
             //tileMap.ParallaxFactorOffset.X -= 0.001f; tileMap.ParallaxFactorOffset.Y -= 0.001f;
 
-            var speed = 1;
-
-
-
             //if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right")) player.PlayAnimation("run");
             //if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right")) player.PlayAnimation("idle");
 
             if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
 
+            var speed = 0.01f;
+
             if (Input.ActionPressed("move_right"))
-                player.PositionOffset.X += speed;
+                TestTime += speed;
             else if (Input.ActionPressed("move_left"))
-                player.PositionOffset.X -= speed;
+                TestTime -= speed;
 
             if (Input.ActionPressed("move_down"))
                 player.PositionOffset.Y += speed;
             else if (Input.ActionPressed("move_up"))
                 player.PositionOffset.Y -= speed;
+
+            //Console.WriteLine(TestTime);
+            CurrentScene["Mario"].PositionOffset = TestTrack.ValueAtTime(TestTime);
 
             //if (Input.IsActionPressed("move_up")) player.AngleOffset += Rotation.PI / 16;
             //if (Input.IsActionJustPressed("move_up"))
@@ -145,7 +160,7 @@ namespace FerrumModules.Tests
         }
         public void TestPrint()
         {
-            Console.WriteLine("This timer loops and autostarts!");
+            //Console.WriteLine("This timer loops and autostarts!");
         }
     }
 }

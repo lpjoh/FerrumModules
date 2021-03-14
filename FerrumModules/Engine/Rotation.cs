@@ -5,11 +5,15 @@ namespace FerrumModules.Engine
 {
     public static class Rotation
     {
+        public static float Sin(float angle) { return (float)Math.Sin(angle); }
+        public static float Cos(float angle) { return (float)Math.Cos(angle); }
+
         public static Vector2 Rotate(Vector2 v, float angle)
         {
             if (angle == 0.0f) return v;
-            var ca = (float)Math.Cos(angle);
-            var sa = (float)Math.Sin(angle);
+
+            var sa = Sin(angle);
+            var ca = Cos(angle);
             return new Vector2
                 (
                     v.X * ca - v.Y * sa,
