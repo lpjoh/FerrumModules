@@ -11,7 +11,6 @@ namespace FerrumModules.Tests
         public TestGame() : base(640, 360, 2, 2, null, "Ferrum Mario Test") { }
 
         public enum RenderLayers { BackgroundLayer, TileLayer, PlayerLayer, EnemyLayer }
-        public AnimationTrack<Vector2> TestTrack;
 
         public override void InitGame()
         {
@@ -59,15 +58,21 @@ namespace FerrumModules.Tests
             CurrentScene["Punk"].SetRenderLayer(RenderLayers.PlayerLayer);
             //CurrentScene["Punk"].Visible = false;
 
-            TestTrack = new AnimationTrack<Vector2>();
-
-            TestTrack.Keyframes = new List<Keyframe<Vector2>>
-            {
-                new Keyframe<Vector2>(new Vector2(0, 0), 0.5f, Interpolation.Cosine),
-                new Keyframe<Vector2>(new Vector2(0, 32), 0.25f),
+            var testAnim = new Animation<Vector2>("test", false,
+                new Keyframe<Vector2>(new Vector2(0, 0), 0.5f),
+                new Keyframe<Vector2>(new Vector2(0, 32), 0.5f),
                 new Keyframe<Vector2>(new Vector2(32, 32), 0.5f),
-                new Keyframe<Vector2>(new Vector2(32, 0), 0.125f)
-            };
+                new Keyframe<Vector2>(new Vector2(32, 0), 0.5f),
+                new Keyframe<Vector2>(new Vector2(64, 32), 0.25f));
+            var testAnim2 = new Animation<Vector2>("test2", false,
+                new Keyframe<Vector2>(new Vector2(0, 0), 0.5f, Interpolation.Cosine),
+                new Keyframe<Vector2>(new Vector2(0, 64), 0.5f));
+
+            var testPlayer = CurrentScene.AddManager(new Animator<Vector2>());
+            testPlayer.Name = "AnimPlayer";
+            testPlayer.AddAnimation(testAnim);
+            testPlayer.AddAnimation(testAnim2);
+            testPlayer.PlayAnimation("test");
 
             //testTileSet.SetRenderLayer(RenderLayers.TileLayer);
             //testTileSet.Name = "TileMap";
@@ -137,8 +142,6 @@ namespace FerrumModules.Tests
             //if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right")) player.PlayAnimation("run");
             //if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right")) player.PlayAnimation("idle");
 
-            if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
-
             var speed = 0.01f;
 
             if (Input.ActionPressed("move_right"))
@@ -152,7 +155,11 @@ namespace FerrumModules.Tests
                 player.PositionOffset.Y -= speed;
 
             //Console.WriteLine(TestTime);
-            CurrentScene["Mario"].PositionOffset = TestTrack.ValueAtTime(TestTime);
+            var animPlayer = CurrentScene.GetManager<Animator<Vector2>>("AnimPlayer");
+            if (Input.ActionJustPressed("fire")) animPlayer.PlayAnimation("test2");
+            Console.WriteLine(animPlayer.TimePosition);
+
+            animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
 
             //if (Input.IsActionPressed("move_up")) player.AngleOffset += Rotation.PI / 16;
             //if (Input.IsActionJustPressed("move_up"))
