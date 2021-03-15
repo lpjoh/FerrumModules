@@ -35,11 +35,9 @@ namespace FerrumModules.Tests
 
             var marioTexture = Assets.Textures["mario"];
 
-            var mario = new AnimatedSprite(marioTexture, 16, 16, idleAnim);
+            var mario = new AnimatedSprite(marioTexture, 16, 16, idleAnim, runAnim, runPostAnim);
             CurrentScene.AddChild(mario);
             mario.Name = "Mario";
-            mario.AddAnimation(runAnim);
-            mario.AddAnimation(runPostAnim);
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
 
             var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
@@ -49,9 +47,6 @@ namespace FerrumModules.Tests
             mario.FlipX = true;
             mario2.Rotating = false;
             //mario.Centered = false;
-            //mario3.Exit();
-
-            //var testTileSet = CurrentScene.AddChild(new TileMap("mixed"));
 
             TileMap.ObjectNamespace = GetType().Namespace;
             var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetAsEntityList());
@@ -64,29 +59,18 @@ namespace FerrumModules.Tests
                 new Keyframe<Vector2>(new Vector2(32, 32), 0.5f),
                 new Keyframe<Vector2>(new Vector2(32, 0), 0.5f),
                 new Keyframe<Vector2>(new Vector2(64, 32), 0.25f));
-            var testAnim2 = new Animation<Vector2>("test2", false,
+            var testAnim2 = new Animation<Vector2>("test2", true,
                 new Keyframe<Vector2>(new Vector2(0, 0), 0.5f, Interpolation.Cosine),
-                new Keyframe<Vector2>(new Vector2(0, 64), 0.5f));
+                new Keyframe<Vector2>(new Vector2(64, 64), 0.5f));
 
-            var testPlayer = CurrentScene.AddManager(new Animator<Vector2>());
+            var testPlayer = CurrentScene.AddManager(new PropertyAnimator<Vector2>(testAnim, testAnim2));
             testPlayer.Name = "AnimPlayer";
-            testPlayer.AddAnimation(testAnim);
-            testPlayer.AddAnimation(testAnim2);
             testPlayer.PlayAnimation("test");
-
-            //testTileSet.SetRenderLayer(RenderLayers.TileLayer);
-            //testTileSet.Name = "TileMap";
-            //testTileSet.PositionOffset.X = 64;
-            //testTileSet.Infinite = true;
-            //testTileSet.AngleOffset = Rotation.PI / 8;
-            //Console.WriteLine(testTileSet.PositionOffset);
 
             var testTileSet2 = CurrentScene.AddChild(new TileMap("big"));
             testTileSet2.SetRenderLayer(RenderLayers.BackgroundLayer);
             testTileSet2.Infinite = true;
             testTileSet2.ScaleOffset = new Vector2(0.5f, 0.5f);
-            //testTileSet2.ColorOffset = new Color(Color.White, 0.5f);
-            //testTileSet2.Visible = false;
 
 
             var testCamera = mario.AddChild(new Camera());
@@ -96,14 +80,12 @@ namespace FerrumModules.Tests
             testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
             mario.ScaleOffset = new Vector2(2, 2);
-            //testCamera.AngleOffset = Rotation.PI / 8;
             testCamera.PositionOffset.X = 40;
 
             mario.Visible = true;
 
             mario2.PositionOffset = new Vector2(16, 0);
             mario3.PositionOffset = new Vector2(0, 16);
-            //mario2.ScaleOffset = new Vector2(0.5f, 0.5f);
 
             mario2.ColorOffset = new Color(Color.White, 0.5f);
 
@@ -114,56 +96,28 @@ namespace FerrumModules.Tests
             Input.SetAction("fire", Keys.Space, Buttons.A);
         }
 
-        public float TestTime = 0.0f;
-
         public override void UpdateGame(float delta)
         {
-            //Console.WriteLine(TestTime);
-
             base.UpdateGame(delta);
             var player = CurrentScene["Punk"] as AnimatedSprite;
-
-            //Console.WriteLine(player.PositionOffset);
-
-            //Console.WriteLine(CurrentScene.Camera.BoundingBox);
-            //Console.WriteLine(player.GlobalPosition);
-
-            //CurrentScene.Camera.AngleOffset += Rotation.PI / 600;
             CurrentScene["Mario"]["Koopa"].AngleOffset += Rotation.PI * delta;
-            //CurrentScene["Mario"].ScaleOffset.Y += 0.01f;
-            //CurrentScene.Camera.Zoom += 0.01f;
-
-            //var tileMap = CurrentScene["TileMap"] as TileMap;
-            //tileMap.PositionOffset.X += 0.1f; tileMap.PositionOffset.Y += 0.1f;
-            //Console.WriteLine(tileMap.PositionOffset.X);
-
-            //tileMap.ParallaxFactorOffset.X -= 0.001f; tileMap.ParallaxFactorOffset.Y -= 0.001f;
-
-            //if (Input.ActionJustPressed("move_left") || Input.ActionJustPressed("move_right")) player.PlayAnimation("run");
-            //if (Input.ActionJustReleased("move_left") || Input.ActionJustReleased("move_right")) player.PlayAnimation("idle");
 
             var speed = 0.01f;
 
             if (Input.ActionPressed("move_right"))
-                TestTime += speed;
+                player.PositionOffset.X += speed;
             else if (Input.ActionPressed("move_left"))
-                TestTime -= speed;
+                player.PositionOffset.X -= speed;
 
             if (Input.ActionPressed("move_down"))
                 player.PositionOffset.Y += speed;
             else if (Input.ActionPressed("move_up"))
                 player.PositionOffset.Y -= speed;
 
-            //Console.WriteLine(TestTime);
-            var animPlayer = CurrentScene.GetManager<Animator<Vector2>>("AnimPlayer");
+            var animPlayer = CurrentScene.GetManager<PropertyAnimator<Vector2>>("AnimPlayer");
             if (Input.ActionJustPressed("fire")) animPlayer.PlayAnimation("test2");
-            Console.WriteLine(animPlayer.TimePosition);
 
             animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
-
-            //if (Input.IsActionPressed("move_up")) player.AngleOffset += Rotation.PI / 16;
-            //if (Input.IsActionJustPressed("move_up"))
-            //    player.Velocity = new Vector2(player.Velocity.X, -100);
         }
         public void TestPrint()
         {

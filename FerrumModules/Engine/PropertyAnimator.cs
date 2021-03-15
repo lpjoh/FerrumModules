@@ -38,7 +38,7 @@ namespace FerrumModules.Engine
         }
     }
 
-    public class Animator<T> : Manager
+    public class PropertyAnimator<T> : Manager
     {
         private readonly Dictionary<string, Animation<T>> animationNameDict = new Dictionary<string, Animation<T>>();
         private Animation<T> _currentAnimation;
@@ -50,6 +50,12 @@ namespace FerrumModules.Engine
                 TimePosition = 0.0f;
                 _currentAnimation = value;
             }
+        }
+
+        public PropertyAnimator(params Animation<T>[] animations)
+        {
+            SetInterpolationAction();
+            foreach (var a in animations) AddAnimation(a);
         }
 
         public float TimePosition = 0.0f;
@@ -104,11 +110,6 @@ namespace FerrumModules.Engine
                 Stopping = false;
             }
             else if (CurrentAnimation != null) value = ValueAtTime(TimePosition);
-        }
-
-        public Animator()
-        {
-            SetInterpolationAction();
         }
 
         private const Interpolation DefaultInterpolationMode = Interpolation.Linear;

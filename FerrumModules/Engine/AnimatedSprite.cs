@@ -52,28 +52,28 @@ namespace FerrumModules.Engine
         private float _timeSinceFrameChange;
         private readonly Queue<string> _animationQueue = new Queue<string>();
 
-        private void StartAnimation(SpriteAnimation startingAnimation)
+        private void StartAnimation(params SpriteAnimation[] animations)
         {
-            if (startingAnimation != null)
+            if (animations.Length > 0)
             {
-                AddAnimation(startingAnimation);
-                PlayAnimation(startingAnimation.Name);
+                foreach (var a in animations) AddAnimation(a);
+                PlayAnimation(animations[0].Name);
             }
         }
 
-        public AnimatedSprite(SpriteAnimation startingAnimation = null) : base()
+        public AnimatedSprite(params SpriteAnimation[] animations) : base()
         {
-            StartAnimation(startingAnimation);
+            StartAnimation(animations);
         }
-        public AnimatedSprite(int tileWidth, int tileHeight, SpriteAnimation startingAnimation = null)
+        public AnimatedSprite(int tileWidth, int tileHeight, params SpriteAnimation[] animations)
             : base(tileWidth, tileHeight)
         {
-            StartAnimation(startingAnimation);
+            StartAnimation(animations);
         }
-        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, SpriteAnimation startingAnimation = null)
+        public AnimatedSprite(Texture2D texture, int tileWidth, int tileHeight, params SpriteAnimation[] animations)
             : base(texture, tileWidth, tileHeight)
         {
-            StartAnimation(startingAnimation);
+            StartAnimation(animations);
         }
 
         public override void Update(float delta)
