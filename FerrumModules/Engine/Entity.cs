@@ -52,27 +52,6 @@ namespace FerrumModules.Engine
                 return Parent.GlobalAngle + AngleOffset;
             }
         }
-
-        public struct RenderTransform
-        {
-            public Vector2 Position;
-            public Vector2 Scale;
-            public float Angle;
-        }
-
-        public RenderTransform GetRenderTransform()
-        {
-            var camera = Scene.Camera;
-            var transform = new RenderTransform
-            {
-                Scale = GlobalScale * camera.Zoom,
-                Angle = GlobalAngle - camera.AngleOffset
-            };
-            transform.Position = Rotation.Rotate((GlobalPosition - camera.GlobalPosition) / GlobalScale * transform.Scale, -camera.AngleOffset);
-
-            return transform;
-        }
-
         public virtual bool Centered { get; set; } = true;
 
         public Color ColorOffset = Color.White;
@@ -107,7 +86,7 @@ namespace FerrumModules.Engine
 
         #region Children
 
-        public List<Entity> Children { get; private set; } = new List<Entity>();
+        public readonly List<Entity> Children = new List<Entity>();
 
         public bool HasChild(Entity entity)
         {
@@ -145,20 +124,15 @@ namespace FerrumModules.Engine
             return entity;
         }
 
-        public List<EntityType> AddChildren<EntityType>(List<EntityType> entityList) where EntityType : Entity
+        public EntityType[] AddChildren<EntityType>(params EntityType[] entityList) where EntityType : Entity
         {
             foreach (var e in entityList) AddChild(e);
             return entityList;
         }
 
-        public void RemoveChild<EntityType>(EntityType entity) where EntityType : Entity
+        public BaseType[] GetChildrenWithBase<BaseType>() where BaseType : Entity
         {
-            RemoveObjectFromList(Children, entity);
-        }
-
-        public List<EntityType> GetChildrenWithBase<EntityType>() where EntityType : Entity
-        {
-            return GetObjectsFromListWithBase<Entity, EntityType>(Children);
+            return GetObjectsFromListWithBase<Entity, BaseType>(Children);
         }
 
         #endregion
@@ -225,11 +199,6 @@ namespace FerrumModules.Engine
             return manager;
         }
 
-        public void RemoveManager<ManagerType>(ManagerType manager) where ManagerType : Manager
-        {
-            RemoveObjectFromList(Managers, manager);
-        }
-
         #endregion
 
         public override string Name
@@ -240,6 +209,8 @@ namespace FerrumModules.Engine
                 _name = value;
             }
         }
+
+        public Dictionary<string, string> SpawnProperties;
 
         private int RenderLayer = 0;
         public void SetRenderLayer<EnumType>(EnumType layerEnum) where EnumType : Enum
@@ -269,8 +240,6 @@ namespace FerrumModules.Engine
             return;
         }
 
-        public bool Visible = true;
-
         public override void Update(float delta)
         {
             base.Update(delta);
@@ -287,8 +256,11 @@ namespace FerrumModules.Engine
             foreach (var m in Managers) m.Exit();
             Scene.EntitiesToBeDeleted.Add(this);
         }
+
+        public bool Visible = true;
         public virtual void Render(SpriteBatch spriteBatch)
         {
+            if (!Visible) return;
             foreach (var c in Children) c.Render(spriteBatch);
         }
     }

@@ -5,24 +5,17 @@ namespace FerrumModules.Engine
 {
     public static class Rotation
     {
-        public static float Sin(float angle) { return (float)Math.Sin(angle); }
-        public static float Cos(float angle) { return (float)Math.Cos(angle); }
-
         public static Vector2 Rotate(Vector2 v, float angle)
         {
             if (angle == 0.0f) return v;
 
-            var sa = Sin(angle);
-            var ca = Cos(angle);
+            var sa = MathF.Sin(angle);
+            var ca = MathF.Cos(angle);
             return new Vector2
                 (
                     v.X * ca - v.Y * sa,
                     v.Y * ca + v.X * sa
                 );
-        }
-        public static float PI
-        {
-            get { return (float)Math.PI; }
         }
 
         public static Rectangle RotatedRectAABB(Vector2 rectSize, Vector2 rotationCenterOffset, Vector2 positionOffset, float angle)

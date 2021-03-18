@@ -8,7 +8,7 @@ namespace FerrumModules.Tests
 {
     public class TestGame : FerrumEngine
     {
-        public TestGame() : base(640, 360, 2, 2, null, "Ferrum Mario Test") { }
+        public TestGame() : base(640, 360, 1, 1, null, "Ferrum Mario Test") { }
 
         public enum RenderLayers { BackgroundLayer, TileLayer, PlayerLayer, EnemyLayer }
 
@@ -22,13 +22,13 @@ namespace FerrumModules.Tests
             testTimer.Timeout += TestPrint;
             testTimer.Name = "Timer";
 
-            var idleFrames = new List<int>() { 3, 2, 1 };
+            var idleFrames = new int[] { 3, 2, 1 };
             var idleAnim = new SpriteAnimation("idle", idleFrames, 3);
 
-            var runFrames = new List<int>() { 6, 5, 4 };
+            var runFrames = new int[] { 6, 5, 4 };
             var runAnim = new SpriteAnimation("run", runFrames, 3, 1);
 
-            var runPostFrames = new List<int>() { 7 };
+            var runPostFrames = new int[] { 7 };
             var runPostAnim = new SpriteAnimation("runPost", runPostFrames, 3);
 
             CurrentScene.BackgroundColor = Color.Goldenrod;
@@ -39,6 +39,7 @@ namespace FerrumModules.Tests
             CurrentScene.AddChild(mario);
             mario.Name = "Mario";
             mario.SetRenderLayer(RenderLayers.PlayerLayer);
+            //mario.Visible = false;
 
             var mario2 = mario.AddChild(new StaticSprite(marioTexture, 16, 16, 8));
             mario2.Name = "Koopa";
@@ -49,15 +50,15 @@ namespace FerrumModules.Tests
             //mario.Centered = false;
 
             TileMap.ObjectNamespace = GetType().Namespace;
-            var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetAsEntityList());
+            var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetEntities());
             CurrentScene["Punk"].SetRenderLayer(RenderLayers.PlayerLayer);
             //CurrentScene["Punk"].Visible = false;
 
-            var testAnim = new Animation<Vector2>("test", false,
-                new Keyframe<Vector2>(new Vector2(0, 0), 0.5f),
-                new Keyframe<Vector2>(new Vector2(0, 32), 0.5f),
-                new Keyframe<Vector2>(new Vector2(32, 32), 0.5f),
-                new Keyframe<Vector2>(new Vector2(32, 0), 0.5f),
+            var testAnim = new Animation<Vector2>("test", true,
+                new Keyframe<Vector2>(new Vector2(0, 0), 0.25f),
+                new Keyframe<Vector2>(new Vector2(0, 32), 0.25f),
+                new Keyframe<Vector2>(new Vector2(32, 32), 0.25f),
+                new Keyframe<Vector2>(new Vector2(32, 0), 0.25f),
                 new Keyframe<Vector2>(new Vector2(64, 32), 0.25f));
             var testAnim2 = new Animation<Vector2>("test2", true,
                 new Keyframe<Vector2>(new Vector2(0, 0), 0.5f, Interpolation.Cosine),
@@ -70,8 +71,7 @@ namespace FerrumModules.Tests
             var testTileSet2 = CurrentScene.AddChild(new TileMap("big"));
             testTileSet2.SetRenderLayer(RenderLayers.BackgroundLayer);
             testTileSet2.Infinite = true;
-            testTileSet2.ScaleOffset = new Vector2(0.5f, 0.5f);
-
+            testTileSet2.ScaleOffset = new Vector2(1f, 1f);
 
             var testCamera = mario.AddChild(new Camera());
             testCamera.Name = "Camera";
@@ -81,8 +81,6 @@ namespace FerrumModules.Tests
             mario.PositionOffset = new Vector2(0, 0);
             mario.ScaleOffset = new Vector2(2, 2);
             testCamera.PositionOffset.X = 40;
-
-            mario.Visible = true;
 
             mario2.PositionOffset = new Vector2(16, 0);
             mario3.PositionOffset = new Vector2(0, 16);
@@ -100,7 +98,6 @@ namespace FerrumModules.Tests
         {
             base.UpdateGame(delta);
             var player = CurrentScene["Punk"] as AnimatedSprite;
-            CurrentScene["Mario"]["Koopa"].AngleOffset += Rotation.PI * delta;
 
             var speed = 0.01f;
 
@@ -122,6 +119,19 @@ namespace FerrumModules.Tests
         public void TestPrint()
         {
             //Console.WriteLine("This timer loops and autostarts!");
+        }
+
+        public override void RenderGame()
+        {
+            base.RenderGame();
+            var poly = new ConvexPolygon(Color.Red,
+                new Vector2(0, 0),
+                new Vector2(0, 0.5f),
+                new Vector2(0.5f, 0),
+
+                new Vector2(0, 0.5f),
+                new Vector2(0.5f, 0),
+                new Vector2(0.5f, 0.5f));
         }
     }
 }

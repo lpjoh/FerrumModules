@@ -11,7 +11,7 @@ namespace FerrumModules.Tests
         public TestSprite() : base(16, 16)
         {
             Texture = Assets.Textures["mario"];
-            AddAnimation(new SpriteAnimation("default", new List<int>() { 3, 4, 5 }));
+            AddAnimation(new SpriteAnimation("default", new int[] { 3, 4, 5 }));
             CurrentFrame = 6;
         }
 

@@ -99,16 +99,15 @@ namespace FerrumModules.Engine
 
             if (Texture != null && isOnScreen)
             {
-                var renderTransform = GetRenderTransform();
                 Vector2 renderOrigin = Centered ? (new Vector2(TileWidth, TileHeight) / GlobalScale) / 2 * GlobalScale : Vector2.Zero;
                 spriteBatch.Draw(
                     Texture,
-                    renderTransform.Position,
+                    GlobalPosition,
                     sourceRect,
                     GlobalColor * ((float)GlobalColor.A / 256),
-                    Rotating ? renderTransform.Angle : -Scene.Camera.AngleOffset,
+                    Rotating ? GlobalAngle : 0.0f,
                     renderOrigin,
-                    renderTransform.Scale,
+                    GlobalScale,
                     FlipEffects,
                     0.0f);
             }

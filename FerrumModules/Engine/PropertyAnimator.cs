@@ -23,18 +23,15 @@ namespace FerrumModules.Engine
     public class Animation<T>
     {
         public readonly string Name;
-        public readonly List<Keyframe<T>> Keyframes = new List<Keyframe<T>>();
+        public readonly Keyframe<T>[] Keyframes;
         public readonly float TotalDuration = 0.0f;
         public readonly bool Looping;
         public Animation(string name, bool looping, params Keyframe<T>[] keyframes)
         {
             Name = name;
             Looping = looping;
-            foreach (var k in keyframes)
-            {
-                Keyframes.Add(k);
-                TotalDuration += k.Duration;
-            }
+            Keyframes = keyframes;
+            foreach (var k in Keyframes) TotalDuration += k.Duration;
         }
     }
 
@@ -64,8 +61,6 @@ namespace FerrumModules.Engine
             base.Update(delta);
             if (CurrentAnimation != null)
             {
-                TimePosition += delta;
-
                 var animationDuration = CurrentAnimation.TotalDuration;
                 if (TimePosition >= animationDuration)
                 {
@@ -75,6 +70,7 @@ namespace FerrumModules.Engine
                     if (!CurrentAnimation.Looping)
                         Paused = true;
                 }
+                TimePosition += delta;
             }
         }
 
@@ -130,28 +126,22 @@ namespace FerrumModules.Engine
                 InterpolationAction = InterpolateVector2;
         }
 
-        private static float InterpolateLinear(float start, float end, float factor)
-        {
-            return (start * (1 - factor) + end * factor);
-        }
-
         private static float InterpolateCosine(float start, float end, float factor)
         {
-            var cosFactor = (1 - Rotation.Cos(factor * Rotation.PI)) / 2;
+            var cosFactor = (1 - MathF.Cos(factor * MathF.PI)) / 2;
             return start * (1 - cosFactor) + end * cosFactor;
         }
 
         private float Interpolate(float start, float end, float factor)
         {
-            switch (InterpolationMode)
+            return InterpolationMode switch
             {
-                case Interpolation.Linear:
-                    return InterpolateLinear(start, end, factor);
-                case Interpolation.Cosine:
-                    return InterpolateCosine(start, end, factor);
-                default:
-                    return start;
-            }
+                Interpolation.Linear => MathHelper.Lerp(start, end, factor),
+                Interpolation.Cosine => InterpolateCosine(start, end, factor),
+                Interpolation.Constant => start,
+                Interpolation.Preset => start,
+                _ => start,
+            };
         }
 
         private object InterpolateInt(object start, object end, float factor)
@@ -174,7 +164,7 @@ namespace FerrumModules.Engine
         {
             var keyframes = CurrentAnimation.Keyframes;
 
-            var keyframesSize = keyframes.Count;
+            var keyframesSize = keyframes.Length;
             var lastKeyIndex = keyframesSize - 1;
 
             if (CurrentAnimation.Looping)

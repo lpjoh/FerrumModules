@@ -9,13 +9,13 @@ namespace FerrumModules.Engine
     {
         public string Name { get; private set; }
 
-        public List<int> Frames;
+        public int[] Frames;
         public int FPS;
         public int LoopPoint;
 
-        public SpriteAnimation(string name, List<int> frames, int fps = 12, int loopPoint = 0)
+        public SpriteAnimation(string name, int[] frames, int fps = 12, int loopPoint = 0)
         {
-            if (loopPoint >= frames.Count)
+            if (loopPoint >= frames.Length)
                 throw new Exception("The loop point of sprite animation \"" + name + "\" exceeded its frame count.");
 
             Name = name;
@@ -86,7 +86,7 @@ namespace FerrumModules.Engine
                 var fpsTime = 1f / _currentAnimation.FPS;
                 while (_timeSinceFrameChange >= fpsTime)
                 {
-                    if (FrameIndex >= _currentAnimation.Frames.Count - 1)
+                    if (FrameIndex >= _currentAnimation.Frames.Length - 1)
                     {
                         if (_animationQueue.Count > 0)
                         {

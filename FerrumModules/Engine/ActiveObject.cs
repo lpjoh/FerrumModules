@@ -24,12 +24,12 @@ namespace FerrumModules.Engine
         public virtual void Exit() { }
 
         #region Active Object List Generics
-        protected ElementType GetFromObjectListByIndex<ElementType>(List<ElementType> list, int index) where ElementType : ActiveObject
+        public ElementType GetFromObjectListByIndex<ElementType>(List<ElementType> list, int index) where ElementType : ActiveObject
         {
             return list[index];
         }
 
-        protected ElementType GetFromObjectListByName<ElementType>(List<ElementType> list, string elementName)
+        public ElementType GetFromObjectListByName<ElementType>(List<ElementType> list, string elementName)
             where ElementType : ActiveObject
         {
             if (elementName == "") throw new Exception("You cannot fetch an object with no name from \"" + Name + "\".");
@@ -40,7 +40,7 @@ namespace FerrumModules.Engine
             throw new Exception("Object \"" + elementName + "\" was requested from \"" + Name + "\", but did not exist.");
         }
 
-        protected void AssertNameIsUniqueInObjectList<ElementType>(List<ElementType> list, string elementName) where ElementType : ActiveObject
+        public void AssertNameIsUniqueInObjectList<ElementType>(List<ElementType> list, string elementName) where ElementType : ActiveObject
         {
             foreach (var e in list)
             {
@@ -48,18 +48,18 @@ namespace FerrumModules.Engine
             }
         }
 
-        protected bool ObjectListHas<ElementType>(List<ElementType> list, ElementType element) where ElementType : ActiveObject
+        public bool ObjectListHas<ElementType>(List<ElementType> list, ElementType element) where ElementType : ActiveObject
         {
             return list.Contains(element);
         }
 
-        protected bool ObjectListHas<ElementType>(List<ElementType> list, string name) where ElementType : ActiveObject
+        public bool ObjectListHas<ElementType>(List<ElementType> list, string name) where ElementType : ActiveObject
         {
             foreach (var e in list) if (e.Name == name) return true;
             return false;
         }
 
-        protected NewObjectType AddObjectToList<ElementType, NewObjectType>(List<ElementType> list, List<ElementType> oldList, NewObjectType element)
+        public NewObjectType AddObjectToList<ElementType, NewObjectType>(List<ElementType> list, List<ElementType> oldList, NewObjectType element)
             where ElementType : ActiveObject
             where NewObjectType : ElementType
         {
@@ -78,22 +78,23 @@ namespace FerrumModules.Engine
             return element;
         }
 
-        protected void RemoveObjectFromList<ElementType>(List<ElementType> list, ElementType element)
+        public void RemoveObjectFromList<ElementType>(List<ElementType> list, ElementType element)
             where ElementType : ActiveObject
         {
             if (list != null && !list.Remove(element))
                 throw new Exception("Object \"" + element.Name + "\" does not exist in \"" + Name + "\" or was already removed.");
         }
 
-        protected List<BaseType> GetObjectsFromListWithBase<ElementType, BaseType>(List<ElementType> list)
+        public BaseType[] GetObjectsFromListWithBase<ElementType, BaseType>(List<ElementType> list)
             where BaseType : ElementType
             where ElementType : ActiveObject
         {
-            var elementsWithBase = new List<BaseType>();
-            foreach (var e in list)
+            var elementsWithBase = new BaseType[list.Count];
+            for (int i = 0; i < list.Count; i++)
             {
-                var type = e.GetType();
-                if (type.IsSubclassOf(typeof(BaseType)) || type == typeof(BaseType)) elementsWithBase.Add((BaseType)e);
+                var element = list[i];
+                var type = element.GetType();
+                if (type.IsSubclassOf(typeof(BaseType)) || type == typeof(BaseType)) elementsWithBase[i] = (BaseType)element;
             }
             return elementsWithBase;
         }

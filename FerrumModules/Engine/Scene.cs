@@ -23,10 +23,10 @@ namespace FerrumModules.Engine
         public override void Update(float delta)
         {
             base.Update(delta);
-            foreach (var e in EntitiesToBeDeleted) e.Parent?.RemoveChild(e);
-            EntitiesToBeDeleted.Clear();
 
-            foreach (var m in ManagersToBeDeleted) m.Parent?.RemoveManager(m);
+            foreach (var e in EntitiesToBeDeleted) e.Parent?.RemoveObjectFromList(e.Parent.Children, e);
+            EntitiesToBeDeleted.Clear();
+            foreach (var m in ManagersToBeDeleted) m.Parent?.RemoveObjectFromList(m.Parent.Managers, m);
             ManagersToBeDeleted.Clear();
         }
 
