@@ -5,7 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace FerrumModules.Engine
+using Crossfrog.FerrumEngine.Modules;
+
+namespace Crossfrog.FerrumEngine
 {
     public class FerrumEngine : Game
     {
@@ -17,7 +19,6 @@ namespace FerrumModules.Engine
 
         public int BufferWidth { get; private set; }
         public int BufferHeight { get; private set; }
-
         private int blitWidth, blitHeight;
 
         public float FPS
@@ -174,7 +175,6 @@ namespace FerrumModules.Engine
             GraphicsDevice.Clear(CurrentScene.BackgroundColor);
             CurrentScene.Render(_spriteBatch);
             _spriteBatch.End();
-            RenderGame();
 
             GraphicsDevice.SetRenderTarget(null);
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.PointClamp);
@@ -188,8 +188,6 @@ namespace FerrumModules.Engine
 
             _spriteBatch.End();
         }
-
-        public virtual void RenderGame() { }
 
         public void OnWindowResize(object sender, EventArgs e)
         {

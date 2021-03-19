@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace FerrumModules.Engine
+using Crossfrog.FerrumEngine.Modules;
+
+namespace Crossfrog.FerrumEngine
 {
     public class Entity : ActiveObject
     {
@@ -112,11 +115,6 @@ namespace FerrumModules.Engine
 
         public Entity this[string name] { get => GetChild<Entity>(name); }
 
-        private void AssertChildNameIsUnique(string name)
-        {
-            AssertNameIsUniqueInObjectList(Children, name);
-        }
-
         public EntityType AddChild<EntityType>(EntityType entity) where EntityType : Entity
         {
             entity.Parent = this;
@@ -188,11 +186,6 @@ namespace FerrumModules.Engine
             return (ManagerType)GetFromObjectListByName(Managers, managerName);
         }
 
-        public void AssertManagerNameIsUnique(string name)
-        {
-            AssertNameIsUniqueInObjectList(Managers, name);
-        }
-
         public ManagerType AddManager<ManagerType>(ManagerType manager) where ManagerType : Manager
         {
             manager.Parent = this;
@@ -205,7 +198,9 @@ namespace FerrumModules.Engine
         {
             set
             {
-                Parent?.AssertChildNameIsUnique(value);
+#if DEBUG
+                Parent?.AssertNameIsUniqueInObjectList(Parent.Children, value);
+#endif
                 _name = value;
             }
         }

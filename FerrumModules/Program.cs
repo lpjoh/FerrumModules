@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FerrumModules.Tests
+namespace FerrumXF.Tests
 {
     public static class Program
     {

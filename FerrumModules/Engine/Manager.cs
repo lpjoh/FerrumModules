@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FerrumModules.Engine
+﻿namespace Crossfrog.FerrumEngine
 {
     public class Manager : ActiveObject
     {
@@ -21,7 +17,9 @@ namespace FerrumModules.Engine
         {
             set
             {
-                Parent.AssertManagerNameIsUnique(value);
+#if DEBUG
+                Parent?.AssertNameIsUniqueInObjectList(Parent.Managers, value);
+#endif
                 _name = value;
             }
         }

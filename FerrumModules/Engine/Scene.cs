@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 
-namespace FerrumModules.Engine
+namespace Crossfrog.FerrumEngine
 {
     public class Scene : Entity
     {
@@ -30,6 +30,11 @@ namespace FerrumModules.Engine
             ManagersToBeDeleted.Clear();
         }
 
-        public override void Exit() { if (Scene == this) throw new Exception("Don't delete a scene while it's in use."); }
+        public override void Exit()
+        {
+#if DEBUG
+            if (Scene == this) throw new Exception("Don't delete a scene while it's in use.");
+#endif
+        }
     }
 }

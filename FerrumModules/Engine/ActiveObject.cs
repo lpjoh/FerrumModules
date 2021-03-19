@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FerrumModules.Engine
+namespace Crossfrog.FerrumEngine
 {
     public abstract class ActiveObject
     {
@@ -24,12 +24,12 @@ namespace FerrumModules.Engine
         public virtual void Exit() { }
 
         #region Active Object List Generics
-        public ElementType GetFromObjectListByIndex<ElementType>(List<ElementType> list, int index) where ElementType : ActiveObject
+        public ElementType GetFromObjectListByIndex<ElementType>(IList<ElementType> list, int index) where ElementType : ActiveObject
         {
             return list[index];
         }
 
-        public ElementType GetFromObjectListByName<ElementType>(List<ElementType> list, string elementName)
+        public ElementType GetFromObjectListByName<ElementType>(IList<ElementType> list, string elementName)
             where ElementType : ActiveObject
         {
             if (elementName == "") throw new Exception("You cannot fetch an object with no name from \"" + Name + "\".");
@@ -37,34 +37,41 @@ namespace FerrumModules.Engine
             foreach (var e in list)
                 if (e.Name == elementName) return e;
 
+#if DEBUG
             throw new Exception("Object \"" + elementName + "\" was requested from \"" + Name + "\", but did not exist.");
+#endif
         }
 
-        public void AssertNameIsUniqueInObjectList<ElementType>(List<ElementType> list, string elementName) where ElementType : ActiveObject
+#if DEBUG
+        public void AssertNameIsUniqueInObjectList<ElementType>(IList<ElementType> list, string elementName) where ElementType : ActiveObject
         {
             foreach (var e in list)
             {
-                if (!((e.Name == "") || (e.Name == null)) && (e.Name == elementName)) throw new Exception("An object named \"" + elementName + "\" already existed in \"" + Name + "\".");
+                if (!((e.Name == "") || (e.Name == null)) && (e.Name == elementName))
+                    throw new Exception("An object named \"" + elementName + "\" already existed in \"" + Name + "\".");
             }
         }
+#endif
 
-        public bool ObjectListHas<ElementType>(List<ElementType> list, ElementType element) where ElementType : ActiveObject
+        public bool ObjectListHas<ElementType>(IList<ElementType> list, ElementType element) where ElementType : ActiveObject
         {
             return list.Contains(element);
         }
 
-        public bool ObjectListHas<ElementType>(List<ElementType> list, string name) where ElementType : ActiveObject
+        public bool ObjectListHas<ElementType>(IList<ElementType> list, string name) where ElementType : ActiveObject
         {
             foreach (var e in list) if (e.Name == name) return true;
             return false;
         }
 
-        public NewObjectType AddObjectToList<ElementType, NewObjectType>(List<ElementType> list, List<ElementType> oldList, NewObjectType element)
+        public NewObjectType AddObjectToList<ElementType, NewObjectType>(IList<ElementType> list, IList<ElementType> oldList, NewObjectType element)
             where ElementType : ActiveObject
             where NewObjectType : ElementType
         {
+#if DEBUG
             if (ObjectListHas(list, element)) throw new Exception("Object \"" + element.Name + "\" added which already exists in \"" + Parent.Name + "\".");
             AssertNameIsUniqueInObjectList(list, element.Name);
+#endif
 
             RemoveObjectFromList(oldList, element);
             list.Add(element);
@@ -78,14 +85,18 @@ namespace FerrumModules.Engine
             return element;
         }
 
-        public void RemoveObjectFromList<ElementType>(List<ElementType> list, ElementType element)
+        public void RemoveObjectFromList<ElementType>(IList<ElementType> list, ElementType element)
             where ElementType : ActiveObject
         {
+#if DEBUG
             if (list != null && !list.Remove(element))
                 throw new Exception("Object \"" + element.Name + "\" does not exist in \"" + Name + "\" or was already removed.");
+#else
+            list?.Remove(element);
+#endif
         }
 
-        public BaseType[] GetObjectsFromListWithBase<ElementType, BaseType>(List<ElementType> list)
+        public BaseType[] GetObjectsFromListWithBase<ElementType, BaseType>(IList<ElementType> list)
             where BaseType : ElementType
             where ElementType : ActiveObject
         {
