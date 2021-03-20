@@ -9,7 +9,7 @@ using Crossfrog.FerrumEngine.Modules;
 
 namespace Crossfrog.FerrumEngine
 {
-    public class FerrumEngine : Game
+    public class FE_Engine : Game
     {
         protected readonly GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
@@ -32,7 +32,7 @@ namespace Crossfrog.FerrumEngine
 
         private const string TextureDirectory = "Textures";
 
-        public FerrumEngine(
+        public FE_Engine(
             int bufferWidth = 1280,
             int bufferHeight = 720,
             float windowScaleX = 1.0f,
@@ -61,7 +61,7 @@ namespace Crossfrog.FerrumEngine
             if (startingScene == null)
                 ChangeScene(new Scene());
             else
-                ChangeScene(CurrentScene);
+                ChangeScene(startingScene);
         }
 
         public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : Scene
@@ -80,6 +80,10 @@ namespace Crossfrog.FerrumEngine
         }
 
         public virtual void InitGame() { }
+
+#if DEBUG
+        private Texture2D PhysicsDebugTexture;
+#endif
 
         protected override void LoadContent()
         {
@@ -102,6 +106,11 @@ namespace Crossfrog.FerrumEngine
                 var texture = Content.Load<Texture2D>(TextureDirectory + "/" + fileName);
                 Assets.AddTexture(texture, fileName);
             }
+
+#if DEBUG
+            PhysicsDebugTexture = new Texture2D(GraphicsDevice, 1, 1);
+            PhysicsDebugTexture.SetData(new Color[] { Color.White });
+#endif
 
             UpdateRenderSize();
             LoadGameContent();
@@ -129,9 +138,10 @@ namespace Crossfrog.FerrumEngine
             Input.UpdateActionStates();
         }
         public virtual void UpdateGame(float delta) { }
+
         private Matrix GetViewMatrix(Camera camera)
         {
-            var cameraPosition = -(camera.GlobalPositionNoOffset + camera.PositionOffset);
+            var cameraPosition = -camera.GlobalPosition;
 
             var matrix =
                 Matrix.CreateTranslation(new Vector3(cameraPosition.X, cameraPosition.Y, 0)) *
@@ -146,7 +156,7 @@ namespace Crossfrog.FerrumEngine
 
             return matrix;
         }
-        public Rectangle GetVisibleAreaBox(Matrix viewportMatrix)
+        private Rectangle GetVisibleAreaBox(Matrix viewportMatrix)
         {
             var invertedMatrix = Matrix.Invert(viewportMatrix);
             var tl = Vector2.Transform(Vector2.Zero, invertedMatrix);
@@ -161,19 +171,24 @@ namespace Crossfrog.FerrumEngine
                 MathHelper.Max(tl.Y, MathHelper.Max(tr.Y, MathHelper.Max(bl.Y, br.Y))));
             return new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
+
+        public Rectangle VisibleAreaBox { get; private set; }
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
 
             var camera = CurrentScene.Camera;
             var viewMatrix = GetViewMatrix(camera);
-            camera.BoundingBox = GetVisibleAreaBox(viewMatrix);
+            VisibleAreaBox = GetVisibleAreaBox(viewMatrix);
 
             GraphicsDevice.SetRenderTarget(_renderTarget);
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, viewMatrix);
 
             GraphicsDevice.Clear(CurrentScene.BackgroundColor);
             CurrentScene.Render(_spriteBatch);
+#if DEBUG
+            if (Input.ActionPressed("ShowPhysics")) RenderPhysicsDebug(_spriteBatch);
+#endif
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
@@ -188,6 +203,17 @@ namespace Crossfrog.FerrumEngine
 
             _spriteBatch.End();
         }
+
+#if DEBUG
+        public static float PhysicsDebugOpacity = 0.1f;
+        public void RenderPhysicsDebug(SpriteBatch spriteBatch)
+        {
+            foreach (var body in CurrentScene.PhysicsWorld)
+            {
+                spriteBatch.Draw(PhysicsDebugTexture, body.BoundingBox, new Color(Color.Aqua, PhysicsDebugOpacity));
+            }
+        }
+#endif
 
         public void OnWindowResize(object sender, EventArgs e)
         {
@@ -205,7 +231,5 @@ namespace Crossfrog.FerrumEngine
             blitWidth = _graphics.PreferredBackBufferWidth;
             blitHeight = blitWidth * _renderTarget.Height / _renderTarget.Width;
         }
-
-
     }
 }

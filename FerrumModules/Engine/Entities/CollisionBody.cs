@@ -1,7 +1,6 @@
 ﻿using System;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 using Crossfrog.FerrumEngine.Modules;
 
@@ -17,7 +16,7 @@ namespace Crossfrog.FerrumEngine.Entities
                 var transformedVertices = (Vector2[])Vertices.Clone();
 
                 var position = GlobalPosition;
-                var scale = Parent?.GlobalScale ?? ScaleOffset;
+                var scale = GlobalScale;
                 var angle = GlobalAngle;
                 for (int i = 0; i < transformedVertices.Length; i++)
                     transformedVertices[i] = Rotation.Rotate(transformedVertices[i] * scale, angle) + position;
@@ -26,58 +25,88 @@ namespace Crossfrog.FerrumEngine.Entities
             }
         }
 
+        public Rectangle BoundingBox
+        {
+            get
+            {
+                var rectPosition = new Vector2(float.MaxValue, float.MaxValue);
+                var rectSize = new Vector2(float.MinValue, float.MinValue);
 
-#if DEBUG
-        private Sprite DebugSprite;
-        private readonly Color DebugColor = Color.Red;
-        private const float DebugOpacity = 0.5f;
+                var rectVertices = GlobalVertices;
+                foreach (var v in rectVertices)
+                {
+                    rectPosition.X = Math.Min(rectPosition.X, v.X);
+                    rectPosition.Y = Math.Min(rectPosition.Y, v.Y);
+                    rectSize.X = Math.Max(rectSize.X, v.X);
+                    rectSize.Y = Math.Max(rectSize.Y, v.Y);
+                }
+                rectSize -= rectPosition;
+                
+                return new Rectangle((int)rectPosition.X, (int)rectPosition.Y, (int)rectSize.X, (int)rectSize.Y);
+            }
+        }
+        private float DotProduct(Vector2 v1, Vector2 v2)
+        {
+            return (v1.X * v2.X) + (v1.Y * v2.Y);
+        }
+        private struct ProjectionLine
+        {
+            public float Start;
+            public float End;
+        }
+        private ProjectionLine FindProjectedLine(Vector2[] points, Vector2 normal)
+        {
+            var projectionLine = new ProjectionLine() { Start = float.MaxValue, End = float.MinValue };
+            foreach (var p in points)
+            {
+                var projectionScale = DotProduct(p, normal);
+                projectionLine.Start = Math.Min(projectionScale, projectionLine.Start);
+                projectionLine.End = Math.Max(projectionScale, projectionLine.End);
+            }
+            return projectionLine;
+        }
+        private bool CheckOverlapSAT(Vector2[] shape1, Vector2[] shape2)
+        {
+            for (int i = 0; i < shape1.Length; i++)
+            {
+                var nextIndex = (i + 1) % shape1.Length;
+
+                var vertex = shape1[i];
+                var nextVertex = shape1[nextIndex];
+
+                var edgeNormal = new Vector2(-(vertex.Y - nextVertex.Y), vertex.X - nextVertex.X);
+                var projection = FindProjectedLine(shape1, edgeNormal);
+                var bodyProjection = FindProjectedLine(shape2, edgeNormal);
+
+                if (!(projection.Start <= bodyProjection.End && projection.End >= bodyProjection.Start))
+                    return false;
+            }
+
+            return true;
+        }
+        public bool CollidesWith(CollisionBody body)
+        {
+            var globalVertices = GlobalVertices;
+            var bodyGlobalVertices = body.GlobalVertices;
+
+            return CheckOverlapSAT(globalVertices, bodyGlobalVertices) && CheckOverlapSAT(bodyGlobalVertices, globalVertices);
+        }
 
         public override void Init()
         {
             base.Init();
-            DebugSprite = AddChild(new StaticSprite(1, 1));
-            DebugSprite.Centered = false;
+            Scene.PhysicsWorld.Add(this);
         }
 
-        private void UpdateDebugSprite()
+        public override void Exit()
         {
-            Texture2D debugTexture = new Texture2D(Engine.GraphicsDevice, 1, 1);
-            Color[] colorData = new Color[] { DebugColor };
-            debugTexture.SetData(colorData);
-            DebugSprite.Texture = debugTexture;
-
-            var position = new Vector2(float.MaxValue, float.MaxValue);
-            var scale = new Vector2(float.MinValue, float.MinValue);
-
-            foreach (var v in Vertices)
-            {
-                position = new Vector2(Math.Min(position.X, v.X), Math.Min(position.Y, v.Y));
-                scale = new Vector2(Math.Max(scale.X, v.X), Math.Max(scale.Y, v.Y));
-            }
-            DebugSprite.PositionOffset = position;
-            DebugSprite.ScaleOffset = scale - position;
-            Console.WriteLine(DebugSprite.PositionOffset);
-            Console.WriteLine(DebugSprite.ScaleOffset);
-        }
-
-        public CollisionBody()
-        {
-            DebugColor = new Color(Color.Red, DebugOpacity);
-        }
-#endif
-        public CollisionBody(Color color)
-        {
-#if DEBUG
-            DebugColor = new Color(color, DebugOpacity);
-#endif
+            base.Exit();
+            Scene.PhysicsWorld.Remove(this);
         }
 
         public void SetPoints(params Vector2[] points)
         {
             Vertices = points;
-#if DEBUG
-            UpdateDebugSprite();
-#endif
         }
         public void SetAsRegularShape(int pointCount, Vector2 scale)
         {
@@ -89,9 +118,6 @@ namespace Crossfrog.FerrumEngine.Entities
                 var angle =  i * angleIncrement;
                 Vertices[i] = new Vector2(MathF.Sin(angle), MathF.Cos(angle)) * scale / 2;
             }
-#if DEBUG
-            UpdateDebugSprite();
-#endif
         }
         public void SetAsRegularShape(int pointCount, float scale = 1.0f)
         {
@@ -106,9 +132,6 @@ namespace Crossfrog.FerrumEngine.Entities
             Vertices[1] = new Vector2(halfScale.X, -halfScale.Y);
             Vertices[2] = halfScale;
             Vertices[3] = new Vector2(-halfScale.X, halfScale.Y);
-#if DEBUG
-            UpdateDebugSprite();
-#endif
         }
         public void SetAsBox(float scale = 1.0f)
         {

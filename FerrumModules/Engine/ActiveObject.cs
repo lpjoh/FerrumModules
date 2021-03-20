@@ -48,7 +48,7 @@ namespace Crossfrog.FerrumEngine
             foreach (var e in list)
             {
                 if (!((e.Name == "") || (e.Name == null)) && (e.Name == elementName))
-                    throw new Exception("An object named \"" + elementName + "\" already existed in \"" + Name + "\".");
+                    throw new Exception("An object named \"" + elementName + "\" already existed in the parent.");
             }
         }
 #endif

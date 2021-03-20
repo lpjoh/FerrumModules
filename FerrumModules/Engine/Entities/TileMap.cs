@@ -115,7 +115,7 @@ namespace Crossfrog.FerrumEngine.Entities
             if (!Visible) return;
             Vector2 originalPosition = PositionOffset;
 
-            var cameraBox = Scene.Camera.BoundingBox;
+            var cameraBox = Engine.VisibleAreaBox;
             var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y);
             var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 

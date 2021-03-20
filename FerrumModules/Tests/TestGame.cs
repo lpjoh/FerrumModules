@@ -1,4 +1,6 @@
-﻿using Crossfrog.FerrumEngine;
+﻿using System;
+
+using Crossfrog.FerrumEngine;
 using Crossfrog.FerrumEngine.Entities;
 using Crossfrog.FerrumEngine.Managers;
 using Crossfrog.FerrumEngine.Modules;
@@ -8,7 +10,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FerrumXF.Tests
 {
-    public class TestGame : FerrumEngine
+    public class TestGame : FE_Engine
     {
         public TestGame() : base(640, 360, 1, 1, null, "Ferrum Mario Test") { }
 
@@ -18,7 +20,6 @@ namespace FerrumXF.Tests
         {
             base.InitGame();
             FPS = 60;
-            CurrentScene.Name = "Scene";
 
             var testTimer = CurrentScene.AddManager(new Timer(1, true, true));
             testTimer.Timeout += TestPrint;
@@ -53,13 +54,16 @@ namespace FerrumXF.Tests
             var tileScene = CurrentScene.AddChildren(TileMap.LoadSceneFromFile("mixed", RenderLayers.TileLayer).GetEntities());
             CurrentScene["Punk"].PositionOffset = Vector2.Zero;
 
-            var collisionBody = CurrentScene.AddChild(new CollisionBody());
             var punk = CurrentScene["Punk"];
+            var collisionBody = CurrentScene.AddChild(new CollisionBody());
+            collisionBody.PositionOffset = new Vector2(64, 0);
             collisionBody.AddChild(punk);
             collisionBody.Name = "Player";
-            punk.OpacityOffset = 0.5f;
-            collisionBody.SetRenderLayer(RenderLayers.PlayerLayer);
-            collisionBody.SetAsBox(16);
+            collisionBody.SetAsBox(new Vector2(16, 16));
+
+            var collisionBody2 = CurrentScene.AddChild(new CollisionBody());
+            collisionBody2.SetAsBox(new Vector2(32, 32));
+            collisionBody2.Name = "Static";
 
             //CurrentScene["Punk"].Visible = false;
 
@@ -103,15 +107,22 @@ namespace FerrumXF.Tests
             Input.SetAction("move_up", Keys.Up, Buttons.LeftThumbstickUp);
             Input.SetAction("move_down", Keys.Down, Buttons.LeftThumbstickDown);
             Input.SetAction("fire", Keys.Space, Buttons.A);
+            Input.SetAction("ShowPhysics", Keys.F, Buttons.B);
         }
 
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene["Player"];
+            var player = CurrentScene["Player"] as CollisionBody;
+            player.AngleOffset += MathHelper.Pi / 160;
 
             //foreach (var v in (player["Poly"] as CollisionBody).GlobalVertices) Console.WriteLine(v);
             //Console.WriteLine("--------");
+
+            if (player.CollidesWith(CurrentScene["Static"] as CollisionBody))
+                player.ColorOffset = Color.Blue;
+            else
+                player.ColorOffset = Color.White;
 
             var speed = 1f;
 

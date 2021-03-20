@@ -118,7 +118,6 @@ namespace Crossfrog.FerrumEngine
         public EntityType AddChild<EntityType>(EntityType entity) where EntityType : Entity
         {
             entity.Parent = this;
-            entity.UpdateRenderOrder();
             return entity;
         }
 
@@ -159,7 +158,7 @@ namespace Crossfrog.FerrumEngine
             }
         }
         public Scene Scene => RootEntity as Scene;
-        public FerrumEngine Engine => Scene.Engine;
+        public FE_Engine Engine => Scene.Engine;
 
         #endregion
 
@@ -207,18 +206,31 @@ namespace Crossfrog.FerrumEngine
 
         public Dictionary<string, string> SpawnProperties;
 
-        private int RenderLayer = 0;
+        private int _renderLayer;
+        public int RenderLayer
+        {
+            get => _renderLayer;
+            set
+            {
+                if (Parent != null)
+                {
+                    _renderLayer = value;
+                    UpdateRenderOrder();
+                }
+            }
+        }
         public void SetRenderLayer<EnumType>(EnumType layerEnum) where EnumType : Enum
         {
-            if (Parent != null)
-            {
-                RenderLayer = (int)(object)layerEnum;
-                UpdateRenderOrder();
-            }
+            RenderLayer = (int)(object)layerEnum;
         }
 
         private void UpdateRenderOrder()
         {
+#if DEBUG
+            if (Parent == null)
+                throw new Exception("Entity \"" + Name + "\" needs a parent to sort siblings by render layer.");
+#endif
+
             Parent.Children.Remove(this);
             var siblings = Parent.Children;
 

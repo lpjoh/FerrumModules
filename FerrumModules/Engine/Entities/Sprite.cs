@@ -97,7 +97,7 @@ namespace Crossfrog.FerrumEngine.Entities
             if (!Visible) return;
             base.Render(spriteBatch);
 
-            bool isOnScreen = Collision.RectsCollide(BoundingBox, Scene.Camera.BoundingBox);
+            bool isOnScreen = Collision.RectsCollide(BoundingBox, Engine.VisibleAreaBox);
 
             if (Texture != null && isOnScreen)
             {

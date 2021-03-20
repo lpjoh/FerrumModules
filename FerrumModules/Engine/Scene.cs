@@ -7,9 +7,12 @@ namespace Crossfrog.FerrumEngine
 {
     public class Scene : Entity
     {
-        public Camera Camera;
-        public new FerrumEngine Engine;
+        public new FE_Engine Engine;
+
         public Color BackgroundColor = Color.Gray;
+        public Camera Camera;
+
+        public PhysicsWorld PhysicsWorld = new PhysicsWorld();
 
         public List<Entity> EntitiesToBeDeleted = new List<Entity>();
         public List<Manager> ManagersToBeDeleted = new List<Manager>();
@@ -17,6 +20,7 @@ namespace Crossfrog.FerrumEngine
         public Scene()
         {
             Camera = AddChild(new Camera());
+            Camera.Name = "Camera";
             Camera.Centered = false;
         }
 
