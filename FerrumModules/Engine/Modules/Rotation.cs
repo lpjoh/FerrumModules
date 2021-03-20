@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace Crossfrog.FerrumEngine.Modules
+namespace Crossfrog.Ferrum.Engine.Modules
 {
     public static class Rotation
     {

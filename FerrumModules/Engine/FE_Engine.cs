@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine.Modules;
 
-namespace Crossfrog.FerrumEngine
+namespace Crossfrog.Ferrum.Engine
 {
     public class FE_Engine : Game
     {
@@ -206,11 +206,19 @@ namespace Crossfrog.FerrumEngine
 
 #if DEBUG
         public static float PhysicsDebugOpacity = 0.1f;
+        public static Color BoxColor = new Color(Color.Maroon, PhysicsDebugOpacity);
+        public static Color VertexColor = Color.Aqua;
+        public static Vector2 VertexOrigin = new Vector2(0.5f, 0.5f);
+        public static Vector2 vertexScale = new Vector2(4, 4);
         public void RenderPhysicsDebug(SpriteBatch spriteBatch)
         {
+
             foreach (var body in CurrentScene.PhysicsWorld)
             {
-                spriteBatch.Draw(PhysicsDebugTexture, body.BoundingBox, new Color(Color.Aqua, PhysicsDebugOpacity));
+                spriteBatch.Draw(PhysicsDebugTexture, body.BoundingBox, BoxColor);
+                
+                foreach (var vertex in body.GlobalVertices)
+                    spriteBatch.Draw(PhysicsDebugTexture, vertex, null, VertexColor, 0.0f, VertexOrigin, vertexScale, SpriteEffects.None, 0.0f);
             }
         }
 #endif

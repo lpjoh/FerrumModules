@@ -1,14 +1,14 @@
 ﻿using System;
 
-using Crossfrog.FerrumEngine;
-using Crossfrog.FerrumEngine.Entities;
-using Crossfrog.FerrumEngine.Managers;
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine;
+using Crossfrog.Ferrum.Engine.Entities;
+using Crossfrog.Ferrum.Engine.Managers;
+using Crossfrog.Ferrum.Engine.Modules;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace FerrumXF.Tests
+namespace Crossfrog.Ferrum.Tests
 {
     public class TestGame : FE_Engine
     {
@@ -55,15 +55,24 @@ namespace FerrumXF.Tests
             CurrentScene["Punk"].PositionOffset = Vector2.Zero;
 
             var punk = CurrentScene["Punk"];
-            var collisionBody = CurrentScene.AddChild(new CollisionBody());
+            var collisionBody = CurrentScene.AddChild(new Sensor());
             collisionBody.PositionOffset = new Vector2(64, 0);
             collisionBody.AddChild(punk);
             collisionBody.Name = "Player";
-            collisionBody.SetAsBox(new Vector2(16, 16));
 
-            var collisionBody2 = CurrentScene.AddChild(new CollisionBody());
-            collisionBody2.SetAsBox(new Vector2(32, 32));
+            var shape = collisionBody.AddChild(new CollisionShape());
+            shape.SetAsBox(new Vector2(16, 16));
+            var shape2 = collisionBody.AddChild(new CollisionShape());
+            shape2.SetAsBox(16);
+            shape2.PositionOffset.X = 16;
+
+            var collisionBody2 = CurrentScene.AddChild(new Sensor());
             collisionBody2.Name = "Static";
+            collisionBody2.ScaleOffset *= 3;
+
+            var shape3 = collisionBody2.AddChild(new CollisionShape());
+            shape3.SetAsRegularShape(8, new Vector2(32, 32));
+
 
             //CurrentScene["Punk"].Visible = false;
 
@@ -91,7 +100,7 @@ namespace FerrumXF.Tests
             testCamera.Name = "Camera";
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
-            testCamera.Zoom = 2f;
+            testCamera.Zoom = 3f;
             mario.PositionOffset = new Vector2(0, 0);
             mario.ScaleOffset = new Vector2(2, 2);
             //testCamera.PositionOffset.X = 40;
@@ -113,13 +122,17 @@ namespace FerrumXF.Tests
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene["Player"] as CollisionBody;
+            var player = CurrentScene["Player"] as Sensor;
             player.AngleOffset += MathHelper.Pi / 160;
 
             //foreach (var v in (player["Poly"] as CollisionBody).GlobalVertices) Console.WriteLine(v);
             //Console.WriteLine("--------");
 
-            if (player.CollidesWith(CurrentScene["Static"] as CollisionBody))
+            var collider = CurrentScene["Static"] as Sensor;
+
+            Console.WriteLine(collider.CollidingBodies.Length);
+
+            if (player.CollidesWith(collider))
                 player.ColorOffset = Color.Blue;
             else
                 player.ColorOffset = Color.White;
@@ -139,7 +152,6 @@ namespace FerrumXF.Tests
             var animPlayer = CurrentScene.GetManager<PropertyAnimator<Vector2>>("AnimPlayer");
 
             if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
-
             //animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
         }
         public void TestPrint()

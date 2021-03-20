@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 using Microsoft.Xna.Framework;
 
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine.Modules;
 
-namespace Crossfrog.FerrumEngine.Entities
+namespace Crossfrog.Ferrum.Engine.Entities
 {
-    public class CollisionBody : Entity
+    public class CollisionShape : Entity
     {
         public Vector2[] Vertices { get; private set; }
         public Vector2[] GlobalVertices
@@ -19,7 +21,7 @@ namespace Crossfrog.FerrumEngine.Entities
                 var scale = GlobalScale;
                 var angle = GlobalAngle;
                 for (int i = 0; i < transformedVertices.Length; i++)
-                    transformedVertices[i] = Rotation.Rotate(transformedVertices[i] * scale, angle) + position;
+                    transformedVertices[i] = Rotation.Rotate(transformedVertices[i] * scale, angle + MathHelper.Pi) + position;
 
                 return transformedVertices;
             }
@@ -41,57 +43,10 @@ namespace Crossfrog.FerrumEngine.Entities
                     rectSize.Y = Math.Max(rectSize.Y, v.Y);
                 }
                 rectSize -= rectPosition;
-                
+
                 return new Rectangle((int)rectPosition.X, (int)rectPosition.Y, (int)rectSize.X, (int)rectSize.Y);
             }
         }
-        private float DotProduct(Vector2 v1, Vector2 v2)
-        {
-            return (v1.X * v2.X) + (v1.Y * v2.Y);
-        }
-        private struct ProjectionLine
-        {
-            public float Start;
-            public float End;
-        }
-        private ProjectionLine FindProjectedLine(Vector2[] points, Vector2 normal)
-        {
-            var projectionLine = new ProjectionLine() { Start = float.MaxValue, End = float.MinValue };
-            foreach (var p in points)
-            {
-                var projectionScale = DotProduct(p, normal);
-                projectionLine.Start = Math.Min(projectionScale, projectionLine.Start);
-                projectionLine.End = Math.Max(projectionScale, projectionLine.End);
-            }
-            return projectionLine;
-        }
-        private bool CheckOverlapSAT(Vector2[] shape1, Vector2[] shape2)
-        {
-            for (int i = 0; i < shape1.Length; i++)
-            {
-                var nextIndex = (i + 1) % shape1.Length;
-
-                var vertex = shape1[i];
-                var nextVertex = shape1[nextIndex];
-
-                var edgeNormal = new Vector2(-(vertex.Y - nextVertex.Y), vertex.X - nextVertex.X);
-                var projection = FindProjectedLine(shape1, edgeNormal);
-                var bodyProjection = FindProjectedLine(shape2, edgeNormal);
-
-                if (!(projection.Start <= bodyProjection.End && projection.End >= bodyProjection.Start))
-                    return false;
-            }
-
-            return true;
-        }
-        public bool CollidesWith(CollisionBody body)
-        {
-            var globalVertices = GlobalVertices;
-            var bodyGlobalVertices = body.GlobalVertices;
-
-            return CheckOverlapSAT(globalVertices, bodyGlobalVertices) && CheckOverlapSAT(bodyGlobalVertices, globalVertices);
-        }
-
         public override void Init()
         {
             base.Init();
@@ -103,7 +58,6 @@ namespace Crossfrog.FerrumEngine.Entities
             base.Exit();
             Scene.PhysicsWorld.Remove(this);
         }
-
         public void SetPoints(params Vector2[] points)
         {
             Vertices = points;
@@ -115,7 +69,7 @@ namespace Crossfrog.FerrumEngine.Entities
             var angleIncrement = MathHelper.TwoPi / pointCount;
             for (int i = 0; i < Vertices.Length; i++)
             {
-                var angle =  i * angleIncrement;
+                var angle = i * angleIncrement;
                 Vertices[i] = new Vector2(MathF.Sin(angle), MathF.Cos(angle)) * scale / 2;
             }
         }

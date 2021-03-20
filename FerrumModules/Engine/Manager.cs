@@ -1,4 +1,4 @@
-﻿namespace Crossfrog.FerrumEngine
+﻿namespace Crossfrog.Ferrum.Engine
 {
     public class Manager : ActiveObject
     {

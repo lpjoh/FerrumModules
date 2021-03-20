@@ -5,11 +5,11 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine.Modules;
 
 using TiledSharp;
 
-namespace Crossfrog.FerrumEngine.Entities
+namespace Crossfrog.Ferrum.Engine.Entities
 {
     public class TileMap : Sprite
     {

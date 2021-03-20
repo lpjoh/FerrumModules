@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine.Modules;
 
-namespace Crossfrog.FerrumEngine
+namespace Crossfrog.Ferrum.Engine
 {
     public class Entity : ActiveObject
     {
@@ -90,29 +90,24 @@ namespace Crossfrog.FerrumEngine
         #region Children
 
         public readonly List<Entity> Children = new List<Entity>();
-
         public bool HasChild(Entity entity)
         {
             return ObjectListHas(Children, entity);
         }
-
         public bool HasChild(string name)
         {
             return ObjectListHas(Children, name);
         }
-
         public EntityType GetChild<EntityType>(int index) where EntityType : Entity
         {
             return (EntityType)GetFromObjectListByIndex(Children, index);
         }
-
         public Entity this[int i] { get => GetChild<Entity>(i); }
 
         public EntityType GetChild<EntityType>(string entityName) where EntityType : Entity
         {
             return (EntityType)GetFromObjectListByName(Children, entityName);
         }
-
         public Entity this[string name] { get => GetChild<Entity>(name); }
 
         public EntityType AddChild<EntityType>(EntityType entity) where EntityType : Entity
@@ -120,18 +115,11 @@ namespace Crossfrog.FerrumEngine
             entity.Parent = this;
             return entity;
         }
-
         public EntityType[] AddChildren<EntityType>(params EntityType[] entityList) where EntityType : Entity
         {
             foreach (var e in entityList) AddChild(e);
             return entityList;
         }
-
-        public BaseType[] GetChildrenWithBase<BaseType>() where BaseType : Entity
-        {
-            return GetObjectsFromListWithBase<Entity, BaseType>(Children);
-        }
-
         #endregion
 
         #region Parents

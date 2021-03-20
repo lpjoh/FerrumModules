@@ -3,7 +3,9 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 
-namespace Crossfrog.FerrumEngine
+using Crossfrog.Ferrum.Engine.Entities;
+
+namespace Crossfrog.Ferrum.Engine
 {
     public class Scene : Entity
     {
@@ -12,7 +14,7 @@ namespace Crossfrog.FerrumEngine
         public Color BackgroundColor = Color.Gray;
         public Camera Camera;
 
-        public PhysicsWorld PhysicsWorld = new PhysicsWorld();
+        public List<CollisionShape> PhysicsWorld = new List<CollisionShape>();
 
         public List<Entity> EntitiesToBeDeleted = new List<Entity>();
         public List<Manager> ManagersToBeDeleted = new List<Manager>();

@@ -1,4 +1,4 @@
-﻿namespace Crossfrog.FerrumEngine.Managers
+﻿namespace Crossfrog.Ferrum.Engine.Managers
 {
     public class Keyframe<T>
     {

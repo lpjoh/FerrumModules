@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 
-namespace Crossfrog.FerrumEngine.Managers
+namespace Crossfrog.Ferrum.Engine.Managers
 {
     public enum Interpolation { Linear, Cosine, Constant, Preset }
 

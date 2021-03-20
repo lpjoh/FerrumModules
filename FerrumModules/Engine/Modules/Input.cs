@@ -3,7 +3,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Crossfrog.FerrumEngine.Modules
+namespace Crossfrog.Ferrum.Engine.Modules
 {
     public static class Input
     {

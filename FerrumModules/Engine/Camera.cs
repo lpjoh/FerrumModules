@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Crossfrog.FerrumEngine
+namespace Crossfrog.Ferrum.Engine
 {
     public class Camera : Entity
     {

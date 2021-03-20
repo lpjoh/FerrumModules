@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FerrumXF.Tests
+namespace Crossfrog.Ferrum.Tests
 {
     public static class Program
     {

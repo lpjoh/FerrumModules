@@ -1,6 +1,8 @@
 ﻿using System;
 
-namespace Crossfrog.FerrumEngine
+using Crossfrog.Ferrum.Engine;
+
+namespace Crossfrog.Ferrum.Tests
 {
     public class TestManager : Manager
     {

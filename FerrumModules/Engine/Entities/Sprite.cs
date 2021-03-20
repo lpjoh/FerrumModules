@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using Crossfrog.FerrumEngine.Modules;
+using Crossfrog.Ferrum.Engine.Modules;
 
-namespace Crossfrog.FerrumEngine.Entities
+namespace Crossfrog.Ferrum.Engine.Entities
 {
     public abstract class Sprite : Entity
     {
@@ -101,7 +101,7 @@ namespace Crossfrog.FerrumEngine.Entities
 
             if (Texture != null && isOnScreen)
             {
-                Vector2 renderOrigin = Centered ? (new Vector2(TileWidth, TileHeight) / GlobalScale) / 2 * GlobalScale : Vector2.Zero;
+                Vector2 renderOrigin = Centered ? new Vector2(TileWidth, TileHeight) / 2 : Vector2.Zero;
                 spriteBatch.Draw(
                     Texture,
                     GlobalPosition,

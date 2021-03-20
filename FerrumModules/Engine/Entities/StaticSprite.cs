@@ -1,4 +1,4 @@
-﻿namespace Crossfrog.FerrumEngine.Entities
+﻿namespace Crossfrog.Ferrum.Engine.Entities
 {
     public class StaticSprite : Sprite
     {

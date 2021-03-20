@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Crossfrog.FerrumEngine
+namespace Crossfrog.Ferrum.Engine
 {
     public abstract class ActiveObject
     {
@@ -95,21 +95,6 @@ namespace Crossfrog.FerrumEngine
             list?.Remove(element);
 #endif
         }
-
-        public BaseType[] GetObjectsFromListWithBase<ElementType, BaseType>(IList<ElementType> list)
-            where BaseType : ElementType
-            where ElementType : ActiveObject
-        {
-            var elementsWithBase = new BaseType[list.Count];
-            for (int i = 0; i < list.Count; i++)
-            {
-                var element = list[i];
-                var type = element.GetType();
-                if (type.IsSubclassOf(typeof(BaseType)) || type == typeof(BaseType)) elementsWithBase[i] = (BaseType)element;
-            }
-            return elementsWithBase;
-        }
-
         #endregion
     }
 }

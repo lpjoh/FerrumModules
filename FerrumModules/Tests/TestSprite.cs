@@ -1,7 +1,7 @@
-﻿using Crossfrog.FerrumEngine.Entities;
-using Crossfrog.FerrumEngine.Modules;
+﻿using Crossfrog.Ferrum.Engine.Entities;
+using Crossfrog.Ferrum.Engine.Modules;
 
-namespace FerrumXF.Tests
+namespace Crossfrog.Ferrum.Tests
 {
     public class TestSprite : AnimatedSprite
     {

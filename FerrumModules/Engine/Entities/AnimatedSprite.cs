@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Crossfrog.FerrumEngine.Entities
+namespace Crossfrog.Ferrum.Engine.Entities
 {
     public class SpriteAnimation
     {

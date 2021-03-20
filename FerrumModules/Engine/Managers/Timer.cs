@@ -1,4 +1,4 @@
-﻿namespace Crossfrog.FerrumEngine
+﻿namespace Crossfrog.Ferrum.Engine.Managers
 {
     public delegate void Timeout();
 
