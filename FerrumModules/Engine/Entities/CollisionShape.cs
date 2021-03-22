@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using Microsoft.Xna.Framework;
 
@@ -10,6 +8,14 @@ namespace Crossfrog.Ferrum.Engine.Entities
 {
     public class CollisionShape : Entity
     {
+        public override Entity Parent
+        {
+            set
+            {
+                base.Parent = value;
+                Scene.PhysicsWorld.Add(this);
+            }
+        }
         public Vector2[] Vertices { get; private set; }
         public Vector2[] GlobalVertices
         {
@@ -46,11 +52,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
 
                 return new Rectangle((int)rectPosition.X, (int)rectPosition.Y, (int)rectSize.X, (int)rectSize.Y);
             }
-        }
-        public override void Init()
-        {
-            base.Init();
-            Scene.PhysicsWorld.Add(this);
         }
 
         public override void Exit()
@@ -90,6 +91,10 @@ namespace Crossfrog.Ferrum.Engine.Entities
         public void SetAsBox(float scale = 1.0f)
         {
             SetAsBox(new Vector2(scale, scale));
+        }
+        public void SetAsBox(float scaleX, float scaleY)
+        {
+            SetAsBox(new Vector2(scaleX, scaleY));
         }
     }
 }

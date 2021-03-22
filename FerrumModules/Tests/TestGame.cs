@@ -61,18 +61,18 @@ namespace Crossfrog.Ferrum.Tests
             collisionBody.Name = "Player";
 
             var shape = collisionBody.AddChild(new CollisionShape());
-            shape.SetAsBox(new Vector2(16, 16));
-            var shape2 = collisionBody.AddChild(new CollisionShape());
-            shape2.SetAsBox(16);
-            shape2.PositionOffset.X = 16;
+            shape.SetAsRegularShape(3, new Vector2(32, 32));
 
             var collisionBody2 = CurrentScene.AddChild(new Sensor());
             collisionBody2.Name = "Static";
-            collisionBody2.ScaleOffset *= 3;
-
+            //collisionBody2.ScaleOffset *= 3;
+            shape.SetAsBox(new Vector2(16, 16));
+            //var shape2 = collisionBody2.AddChild(new CollisionShape());
+            //shape2.SetAsBox(16);
+            //shape2.PositionOffset.X = 16;
             var shape3 = collisionBody2.AddChild(new CollisionShape());
-            shape3.SetAsRegularShape(8, new Vector2(32, 32));
-
+            //shape3.SetAsBox(new Vector2(16, 16));
+            shape3.SetAsBox(new Vector2(64, 16));
 
             //CurrentScene["Punk"].Visible = false;
 
@@ -102,7 +102,7 @@ namespace Crossfrog.Ferrum.Tests
             CurrentScene.Camera = testCamera;
             testCamera.Zoom = 3f;
             mario.PositionOffset = new Vector2(0, 0);
-            mario.ScaleOffset = new Vector2(2, 2);
+            //mario.ScaleOffset = new Vector2(2, 2);
             //testCamera.PositionOffset.X = 40;
 
             mario2.PositionOffset = new Vector2(16, 0);
@@ -123,14 +123,12 @@ namespace Crossfrog.Ferrum.Tests
         {
             base.UpdateGame(delta);
             var player = CurrentScene["Player"] as Sensor;
-            player.AngleOffset += MathHelper.Pi / 160;
+            //player.AngleOffset += MathHelper.Pi / 160;
 
             //foreach (var v in (player["Poly"] as CollisionBody).GlobalVertices) Console.WriteLine(v);
             //Console.WriteLine("--------");
 
             var collider = CurrentScene["Static"] as Sensor;
-
-            Console.WriteLine(collider.CollidingBodies.Length);
 
             if (player.CollidesWith(collider))
                 player.ColorOffset = Color.Blue;
@@ -152,6 +150,8 @@ namespace Crossfrog.Ferrum.Tests
             var animPlayer = CurrentScene.GetManager<PropertyAnimator<Vector2>>("AnimPlayer");
 
             if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
+
+            player.PositionOffset -= Collision.MTVBetween((player[1] as CollisionShape).GlobalVertices, (collider[0] as CollisionShape).GlobalVertices);
             //animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
         }
         public void TestPrint()

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Crossfrog.Ferrum.Engine.Entities;
+
 namespace Crossfrog.Ferrum.Engine
 {
     public abstract class ActiveObject
@@ -15,7 +17,6 @@ namespace Crossfrog.Ferrum.Engine
             get { return _initalized; }
             set { if (_initalized == false) _initalized = true; }
         }
-
         protected Entity _parent;
         public virtual Entity Parent { get => _parent; set => _parent = value; }
 
@@ -48,7 +49,7 @@ namespace Crossfrog.Ferrum.Engine
             foreach (var e in list)
             {
                 if (!((e.Name == "") || (e.Name == null)) && (e.Name == elementName))
-                    throw new Exception("An object named \"" + elementName + "\" already existed in the parent.");
+                    throw new Exception("An object named \"" + elementName + "\" already existed in \"" + Parent.Name + "\".");
             }
         }
 #endif
@@ -72,8 +73,13 @@ namespace Crossfrog.Ferrum.Engine
             if (ObjectListHas(list, element)) throw new Exception("Object \"" + element.Name + "\" added which already exists in \"" + Parent.Name + "\".");
             AssertNameIsUniqueInObjectList(list, element.Name);
 #endif
-
             RemoveObjectFromList(oldList, element);
+            if (typeof(CollisionShape).IsAssignableFrom(typeof(NewObjectType)))
+            {
+                var shape = element as CollisionShape;
+                shape.Scene.PhysicsWorld.Remove(shape);
+            }
+
             list.Add(element);
 
             if (!element.Initialized)

@@ -26,7 +26,7 @@ namespace Crossfrog.Ferrum.Engine.Modules
             public float Start;
             public float End;
         }
-        private static ProjectionLine FindProjectedLine(Vector2[] points, Vector2 normal)
+        private static ProjectionLine ProjectLine(Vector2[] points, Vector2 normal)
         {
             var projectionLine = new ProjectionLine() { Start = float.MaxValue, End = float.MinValue };
             foreach (var p in points)
@@ -41,16 +41,14 @@ namespace Crossfrog.Ferrum.Engine.Modules
         {
             for (int i = 0; i < shape1.Length; i++)
             {
-                var nextIndex = (i + 1) % shape1.Length;
-
                 var vertex = shape1[i];
-                var nextVertex = shape1[nextIndex];
+                var nextVertex = shape1[(i + 1) % shape1.Length];
 
                 var edgeNormal = NormalBetween(vertex, nextVertex);
-                var projection = FindProjectedLine(shape1, edgeNormal);
-                var bodyProjection = FindProjectedLine(shape2, edgeNormal);
+                var firstProjection = ProjectLine(shape1, edgeNormal);
+                var secondProjection = ProjectLine(shape2, edgeNormal);
 
-                if (!(projection.Start <= bodyProjection.End && projection.End >= bodyProjection.Start))
+                if (!(firstProjection.Start <= secondProjection.End && firstProjection.End >= secondProjection.Start))
                     return false;
             }
             return true;
@@ -58,6 +56,49 @@ namespace Crossfrog.Ferrum.Engine.Modules
         public static bool ConvexPolysCollide(Vector2[] shape1, Vector2[] shape2)
         {
             return CheckOverlapSAT(shape1, shape2) && CheckOverlapSAT(shape2, shape1);
+        }
+
+        private static float? CollisionResponseAcrossLine(ProjectionLine line1, ProjectionLine line2)
+        {
+            if (line1.Start <= line2.Start && line1.End > line2.Start)
+                return line2.Start - line1.End;
+            else if (line2.Start <= line1.Start && line2.End > line1.Start)
+                return line2.End - line1.Start;
+            return null;
+        }
+        public static Vector2 MTVBetween(Vector2[] mover, Vector2[] collider)
+        {
+            if (!ConvexPolysCollide(mover, collider))
+                return Vector2.Zero;
+
+            float minResponseMagnitude = float.MaxValue;
+            var responseNormal = Vector2.Zero;
+
+            for (int c = 0; c < collider.Length; c++)
+            {
+                var cPoint = collider[c];
+                var cNextPoint = collider[(c + 1) % collider.Length];
+
+                var cEdgeNormal = NormalBetween(cPoint, cNextPoint);
+
+                var cProjected = ProjectLine(collider, cEdgeNormal);
+                var mProjected = ProjectLine(mover, cEdgeNormal);
+
+                var responseMagnitude = CollisionResponseAcrossLine(cProjected, mProjected);
+                if (responseMagnitude != null && responseMagnitude < minResponseMagnitude)
+                {
+                    minResponseMagnitude = (float)responseMagnitude;
+                    responseNormal = cEdgeNormal;
+                }
+            }
+
+            var normalLength = responseNormal.Length();
+            responseNormal /= normalLength;
+            minResponseMagnitude /= normalLength;
+
+            var mtv = responseNormal * minResponseMagnitude;
+            
+            return mtv;
         }
     }
 }
