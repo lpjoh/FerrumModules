@@ -1,23 +1,13 @@
 ﻿using System;
-
 using Microsoft.Xna.Framework;
-
 using Crossfrog.Ferrum.Engine.Modules;
 
-namespace Crossfrog.Ferrum.Engine.Entities
+namespace Crossfrog.Ferrum.Engine.Physics
 {
-    public class CollisionShape : Entity
+    public class PolygonShape : CollisionShape
     {
-        public override Entity Parent
-        {
-            set
-            {
-                base.Parent = value;
-                Scene.PhysicsWorld.Add(this);
-            }
-        }
         public Vector2[] Vertices { get; private set; }
-        public Vector2[] GlobalVertices
+        public override Vector2[] GlobalVertices
         {
             get
             {
@@ -32,8 +22,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 return transformedVertices;
             }
         }
-
-        public Rectangle BoundingBox
+        public override Rectangle BoundingBox
         {
             get
             {
@@ -53,11 +42,9 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 return new Rectangle((int)rectPosition.X, (int)rectPosition.Y, (int)rectSize.X, (int)rectSize.Y);
             }
         }
-
-        public override void Exit()
+        public PolygonShape(params Vector2[] points)
         {
-            base.Exit();
-            Scene.PhysicsWorld.Remove(this);
+            SetPoints(points);
         }
         public void SetPoints(params Vector2[] points)
         {

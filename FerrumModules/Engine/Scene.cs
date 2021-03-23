@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 
-using Crossfrog.Ferrum.Engine.Entities;
+using Crossfrog.Ferrum.Engine.Physics;
 
 namespace Crossfrog.Ferrum.Engine
 {

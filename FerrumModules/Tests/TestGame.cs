@@ -2,6 +2,7 @@
 
 using Crossfrog.Ferrum.Engine;
 using Crossfrog.Ferrum.Engine.Entities;
+using Crossfrog.Ferrum.Engine.Physics;
 using Crossfrog.Ferrum.Engine.Managers;
 using Crossfrog.Ferrum.Engine.Modules;
 
@@ -55,24 +56,30 @@ namespace Crossfrog.Ferrum.Tests
             CurrentScene["Punk"].PositionOffset = Vector2.Zero;
 
             var punk = CurrentScene["Punk"];
-            var collisionBody = CurrentScene.AddChild(new Sensor());
-            collisionBody.PositionOffset = new Vector2(64, 0);
+            var collisionBody = CurrentScene.AddChild(new KinematicHitbox());
+            collisionBody.PositionOffset = new Vector2(0, 0);
             collisionBody.AddChild(punk);
             collisionBody.Name = "Player";
+            collisionBody.ScaleOffset *= 2;
 
-            var shape = collisionBody.AddChild(new CollisionShape());
-            shape.SetAsRegularShape(3, new Vector2(32, 32));
+            var shape = collisionBody.AddChild(new HitboxShape(16, 16));
+            shape.ScaleOffset /= 2;
+            var shapedos = collisionBody.AddChild(new HitboxShape(16, 16));
+            shapedos.PositionOffset.X = 16;
+            //shape.SetAsRegularShape(8, new Vector2(32, 32));
+            //shape.PositionOffset.X = 32;
+            //shape.SetAsBox(new Vector2(16, 16));
 
-            var collisionBody2 = CurrentScene.AddChild(new Sensor());
+            var collisionBody2 = CurrentScene.AddChild(new StaticHitbox());
             collisionBody2.Name = "Static";
             //collisionBody2.ScaleOffset *= 3;
-            shape.SetAsBox(new Vector2(16, 16));
-            //var shape2 = collisionBody2.AddChild(new CollisionShape());
+            //shape.SetAsBox(new Vector2(16, 16));
+            var shape2 = collisionBody2.AddChild(new HitboxShape(64, 64));
             //shape2.SetAsBox(16);
-            //shape2.PositionOffset.X = 16;
-            var shape3 = collisionBody2.AddChild(new CollisionShape());
+            shape2.PositionOffset.X = 64;
+            shape2.PositionOffset.Y = 16;
+            var shape3 = collisionBody2.AddChild(new HitboxShape(64, 64));
             //shape3.SetAsBox(new Vector2(16, 16));
-            shape3.SetAsBox(new Vector2(64, 16));
 
             //CurrentScene["Punk"].Visible = false;
 
@@ -119,39 +126,31 @@ namespace Crossfrog.Ferrum.Tests
             Input.SetAction("ShowPhysics", Keys.F, Buttons.B);
         }
 
+        private Vector2 prevVel = Vector2.Zero;
         public override void UpdateGame(float delta)
         {
             base.UpdateGame(delta);
-            var player = CurrentScene["Player"] as Sensor;
-            //player.AngleOffset += MathHelper.Pi / 160;
-
-            //foreach (var v in (player["Poly"] as CollisionBody).GlobalVertices) Console.WriteLine(v);
-            //Console.WriteLine("--------");
-
-            var collider = CurrentScene["Static"] as Sensor;
-
-            if (player.CollidesWith(collider))
-                player.ColorOffset = Color.Blue;
-            else
-                player.ColorOffset = Color.White;
+            var player = CurrentScene["Player"] as KinematicHitbox;
+            Console.WriteLine(player.PositionOffset - prevVel);
+            prevVel = player.PositionOffset;
 
             var speed = 1f;
 
             if (Input.ActionPressed("move_right"))
-            player.PositionOffset.X += speed;
+                player.Velocity.X = speed;
             else if (Input.ActionPressed("move_left"))
-            player.PositionOffset.X -= speed;
+                player.Velocity.X = -speed;
+            else player.Velocity.X = 0;
 
             if (Input.ActionPressed("move_down"))
-            player.PositionOffset.Y += speed;
+                player.Velocity.Y = speed;
             else if (Input.ActionPressed("move_up"))
-            player.PositionOffset.Y -= speed;
+                player.Velocity.Y = -speed;
+            else player.Velocity.Y = 0;
 
             var animPlayer = CurrentScene.GetManager<PropertyAnimator<Vector2>>("AnimPlayer");
 
             if (Input.ActionJustPressed("fire")) player.AddChild(CurrentScene.Camera);
-
-            player.PositionOffset -= Collision.MTVBetween((player[1] as CollisionShape).GlobalVertices, (collider[0] as CollisionShape).GlobalVertices);
             //animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
         }
         public void TestPrint()

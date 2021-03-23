@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Crossfrog.Ferrum.Engine.Entities;
+using Crossfrog.Ferrum.Engine.Physics;
 
 namespace Crossfrog.Ferrum.Engine
 {

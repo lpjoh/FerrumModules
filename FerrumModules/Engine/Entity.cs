@@ -58,7 +58,6 @@ namespace Crossfrog.Ferrum.Engine
         public virtual bool Centered { get; set; } = true;
 
         public Color ColorOffset = Color.White;
-        private float NormalizedByte(byte value) => ((float)value + 1) / 256;
         public virtual Color GlobalColor
         {
             get
@@ -70,19 +69,19 @@ namespace Crossfrog.Ferrum.Engine
                     ColorOffset.R * parentColor.R,
                     ColorOffset.G * parentColor.G,
                     ColorOffset.B * parentColor.B,
-                    NormalizedByte(ColorOffset.A) * NormalizedByte(parentColor.A));
+                    Misc.NormalizedByte(ColorOffset.A) * Misc.NormalizedByte(parentColor.A));
                 return globalOpaque;
             }
         }
 
         public float OpacityOffset
         {
-            get => NormalizedByte(ColorOffset.A);
+            get => Misc.NormalizedByte(ColorOffset.A);
             set => ColorOffset = new Color(ColorOffset, value);
         }
         public float GlobalOpacity
         {
-            get => NormalizedByte(GlobalColor.A);
+            get => Misc.NormalizedByte(GlobalColor.A);
         }
 
         #endregion

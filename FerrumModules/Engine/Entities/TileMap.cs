@@ -103,13 +103,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
             PositionOffset = new Vector2((float)tmxTileLayer.OffsetX, (float)tmxTileLayer.OffsetY);
             SpawnProperties = tmxTileLayer.Properties;
         }
-
-        private int SignConsciousModulus(int value, int divisor)
-        {
-            if (value >= 0) return value % divisor;
-            return (divisor - (-value % divisor)) % divisor;
-        }
-
         public override void Render(SpriteBatch spriteBatch)
         {
             if (!Visible) return;
@@ -133,20 +126,20 @@ namespace Crossfrog.Ferrum.Engine.Entities
             for (int i = tileFrameStartY; i < tileFrameEndY; i++)
             {
                 int tileRowIndex;
-                if (InfiniteY) tileRowIndex = SignConsciousModulus(i, Height);
+                if (InfiniteY) tileRowIndex = Misc.SignConsciousModulus(i, Height);
                 else
                 {
-                    if (i >= MapValues.Length) break;
+                    if (i >= Height) break;
                     if (i < 0) continue;
                     tileRowIndex = i;
                 }
                 for (int j = tileFrameStartX; j < tileFrameEndX; j++)
                 {
                     int tileColumnIndex;
-                    if (InfiniteX) tileColumnIndex = SignConsciousModulus(j, Width);
+                    if (InfiniteX) tileColumnIndex = Misc.SignConsciousModulus(j, Width);
                     else
                     {
-                        if (j >= MapValues.Length) break;
+                        if (j >= Width) break;
                         if (j < 0) continue;
                         tileColumnIndex = j;
                     }

@@ -8,10 +8,34 @@ namespace Crossfrog.Ferrum.Engine.Modules
         public static bool RectsCollide(Rectangle rect1, Rectangle rect2)
         {
             return
-                rect1.X <= rect2.X + rect2.Width &&
-                rect1.Y <= rect2.Y + rect2.Height &&
-                rect1.X + rect1.Width >= rect2.X &&
-                rect1.Y + rect1.Height >= rect2.Y;
+                rect1.X < rect2.X + rect2.Width &&
+                rect1.Y < rect2.Y + rect2.Height &&
+                rect1.X + rect1.Width > rect2.X &&
+                rect1.Y + rect1.Height > rect2.Y;
+        }
+        public static bool RectsCollide(Vector2 rect1Pos, Vector2 rect1Size, Vector2 rect2Pos, Vector2 rect2Size)
+        {
+            return
+                rect1Pos.X < rect2Pos.X + rect2Size.X &&
+                rect1Pos.Y < rect2Pos.Y + rect2Size.Y &&
+                rect1Pos.X + rect1Size.X > rect2Pos.X &&
+                rect1Pos.Y + rect1Size.Y > rect2Pos.Y;
+        }
+        public static float DifferenceWindow(float moverStart, float moverEnd, float colliderStart, float colliderEnd)
+        {
+            if (moverStart <= colliderStart && moverEnd > colliderStart)
+                return colliderStart - moverEnd;
+            else if (colliderStart <= moverStart && colliderEnd > moverStart)
+                return colliderEnd - moverStart;
+            return 0.0f;
+        }
+        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axisRef)
+        {
+            if (velocity > 0)
+                axisRef -= moverEnd - colliderStart;
+            else if (velocity < 0)
+                axisRef += colliderEnd - moverStart;
+            velocity = 0;
         }
         private static float DotProduct(Vector2 v1, Vector2 v2)
         {
@@ -56,49 +80,6 @@ namespace Crossfrog.Ferrum.Engine.Modules
         public static bool ConvexPolysCollide(Vector2[] shape1, Vector2[] shape2)
         {
             return CheckOverlapSAT(shape1, shape2) && CheckOverlapSAT(shape2, shape1);
-        }
-
-        private static float? CollisionResponseAcrossLine(ProjectionLine line1, ProjectionLine line2)
-        {
-            if (line1.Start <= line2.Start && line1.End > line2.Start)
-                return line2.Start - line1.End;
-            else if (line2.Start <= line1.Start && line2.End > line1.Start)
-                return line2.End - line1.Start;
-            return null;
-        }
-        public static Vector2 MTVBetween(Vector2[] mover, Vector2[] collider)
-        {
-            if (!ConvexPolysCollide(mover, collider))
-                return Vector2.Zero;
-
-            float minResponseMagnitude = float.MaxValue;
-            var responseNormal = Vector2.Zero;
-
-            for (int c = 0; c < collider.Length; c++)
-            {
-                var cPoint = collider[c];
-                var cNextPoint = collider[(c + 1) % collider.Length];
-
-                var cEdgeNormal = NormalBetween(cPoint, cNextPoint);
-
-                var cProjected = ProjectLine(collider, cEdgeNormal);
-                var mProjected = ProjectLine(mover, cEdgeNormal);
-
-                var responseMagnitude = CollisionResponseAcrossLine(cProjected, mProjected);
-                if (responseMagnitude != null && responseMagnitude < minResponseMagnitude)
-                {
-                    minResponseMagnitude = (float)responseMagnitude;
-                    responseNormal = cEdgeNormal;
-                }
-            }
-
-            var normalLength = responseNormal.Length();
-            responseNormal /= normalLength;
-            minResponseMagnitude /= normalLength;
-
-            var mtv = responseNormal * minResponseMagnitude;
-            
-            return mtv;
         }
     }
 }
