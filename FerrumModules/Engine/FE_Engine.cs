@@ -206,7 +206,7 @@ namespace Crossfrog.Ferrum.Engine
 
 #if DEBUG
         public static float DebugOpacity = 0.1f;
-        public static Color DebugBoxColor = new Color(Color.Maroon, DebugOpacity);
+        public static Color DebugBoxColor = new Color(Color.Navy, DebugOpacity);
         public static Color DebugVertexColor = Color.Aqua;
         public static Vector2 DebugVertexOrigin = new Vector2(0.5f, 0.5f);
         public static Vector2 DebugVertexScale = new Vector2(2, 2);

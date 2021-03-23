@@ -4,11 +4,69 @@ using Crossfrog.Ferrum.Engine.Modules;
 
 namespace Crossfrog.Ferrum.Engine.Physics
 {
-    public class KinematicHitbox : HitboxCollider
+    public class KinematicHitbox : StaticHitbox
     {
-        public const int Iterations = 20;
+        public const int Iterations = 32;
         public Vector2 Velocity;
 
+        private Vector2 MoverExtents;
+        private Vector2 MoverPosition;
+        private Vector2 MoverSize;
+        private Vector2 MoverEndPosition;
+
+        private Vector2 ColliderExtents;
+        private Vector2 ColliderPosition;
+        private Vector2 ColliderSize;
+        private Vector2 ColliderEndPosition;
+
+        private Vector2 MoverColliderDifferenceWindow;
+
+        private bool MoverColliderIntersect()
+        {
+            return Collision.RectsCollide(MoverPosition, MoverSize, ColliderPosition, ColliderSize);
+        }
+        private void UpdateDifferenceWindow()
+        {
+            var windowX = Collision.DifferenceWindow(MoverPosition.X, MoverEndPosition.X, ColliderPosition.X, ColliderEndPosition.X);
+            var windowY = Collision.DifferenceWindow(MoverPosition.Y, MoverEndPosition.Y, ColliderPosition.Y, ColliderEndPosition.Y);
+            MoverColliderDifferenceWindow = new Vector2(windowX, windowY);
+        }
+        private void UpdateMoverPosition(HitboxShape mover)
+        {
+            MoverPosition = mover.GlobalPosition - MoverExtents;
+            MoverEndPosition = MoverPosition + MoverSize;
+        }
+        public void ResolveFor(HitboxShape mover, HitboxShape collider)
+        {
+            MoverExtents = mover.GlobalExtents;
+            MoverPosition = mover.GlobalPosition - MoverExtents;
+            MoverSize = mover.BoxSize * mover.GlobalScale;
+            MoverEndPosition = MoverPosition + MoverSize;
+
+            ColliderExtents = collider.GlobalExtents;
+            ColliderPosition = collider.GlobalPosition - ColliderExtents;
+            ColliderSize = collider.BoxSize * collider.GlobalScale;
+            ColliderEndPosition = ColliderPosition + ColliderSize;
+
+            if (MoverColliderIntersect())
+            {
+                UpdateDifferenceWindow();
+                if (Math.Abs(MoverColliderDifferenceWindow.X) < Math.Abs(MoverColliderDifferenceWindow.Y))
+                {
+                    ResolveX();
+                    UpdateMoverPosition(mover);
+                    if (MoverColliderIntersect())
+                        ResolveY();
+                }
+                else if (Math.Abs(MoverColliderDifferenceWindow.X) > Math.Abs(MoverColliderDifferenceWindow.Y))
+                {
+                    ResolveY();
+                    UpdateMoverPosition(mover);
+                    if (MoverColliderIntersect())
+                        ResolveX();
+                }
+            }
+        }
         public override void Update(float delta)
         {
             for (int i = 0; i < Iterations; i++)
@@ -16,83 +74,51 @@ namespace Crossfrog.Ferrum.Engine.Physics
                 PositionOffset += Velocity / Iterations;
                 foreach (var body in Scene.PhysicsWorld)
                 {
-                if (body.Parent?.GetType() == typeof(StaticHitbox))
-                {
-                    var collider = body.Parent as StaticHitbox;
-                    foreach (var cBox in collider.Hitboxes)
-                        foreach (var mBox in Hitboxes)
-                        {
-                            ResolveFor(mBox, cBox, ref PositionOffset, ref Velocity);
+                    if (body.Parent == this) continue;
 
-                            var moverPosition = mBox.GlobalPosition - mBox.GlobalExtents;
-                            var moverSize = mBox.BoxSize * mBox.GlobalScale;
-                            var colliderPosition = cBox.GlobalPosition - cBox.GlobalExtents;
-                            var colliderSize = cBox.BoxSize * cBox.GlobalScale;
-
-                            if (Collision.RectsCollide(moverPosition, moverSize, colliderPosition, colliderSize))
+                    var bodyType = body.Parent?.GetType();
+                    if (typeof(StaticHitbox).IsAssignableFrom(bodyType))
+                    {
+                        var collider = body.Parent as StaticHitbox;
+                        foreach (var cBox in collider.Hitboxes)
+                            foreach (var mBox in Hitboxes)
                             {
-                                var windowX = Collision.DifferenceWindow(moverPosition.X, moverPosition.X + moverSize.X, colliderPosition.X, colliderPosition.X + colliderSize.X);
-                                var windowY = Collision.DifferenceWindow(moverPosition.Y, moverPosition.Y + moverSize.Y, colliderPosition.Y, colliderPosition.Y + colliderSize.Y);
+                                ResolveFor(mBox, cBox);
 
-                                PositionOffset += new Vector2(windowX, windowY);
+                                UpdateMoverPosition(mBox);
+                                if (MoverColliderIntersect())
+                                {
+                                    UpdateDifferenceWindow();
+
+                                    PositionOffset += MoverColliderDifferenceWindow;
+                                }
                             }
-                        }
-                    }     
+                    }
                 }
             }
 
             base.Update(delta);
         }
 
-        private void ResolveX(Vector2 moverPosition, Vector2 moverSize, Vector2 colliderPosition, Vector2 colliderSize, ref Vector2 velocity, ref Vector2 position)
+        private void ResolveX()
         {
             Collision.Resolve1D(
-                    moverPosition.X,
-                    moverPosition.X + moverSize.X,
-                    colliderPosition.X,
-                    colliderPosition.X + colliderSize.X,
-                    ref velocity.X,
-                    ref position.X);
+                    MoverPosition.X,
+                    MoverEndPosition.X,
+                    ColliderPosition.X,
+                    ColliderEndPosition.X,
+                    ref Velocity.X,
+                    ref PositionOffset.X);
         }
-        private void ResolveY(Vector2 moverPosition, Vector2 moverSize, Vector2 colliderPosition, Vector2 colliderSize, ref Vector2 velocity, ref Vector2 position)
+        private void ResolveY()
         {
             Collision.Resolve1D(
-                    moverPosition.Y,
-                    moverPosition.Y + moverSize.Y,
-                    colliderPosition.Y,
-                    colliderPosition.Y + colliderSize.Y,
-                    ref velocity.Y,
-                    ref position.Y);
-        }
-        public void ResolveFor(HitboxShape mover, HitboxShape collider, ref Vector2 position, ref Vector2 velocity)
-        {
-            var moverExtents = mover.GlobalExtents;
-            var moverPosition = mover.GlobalPosition - moverExtents;
-            var moverSize = mover.BoxSize * mover.GlobalScale;
-
-            var colliderExtents = collider.GlobalExtents;
-            var colliderPosition = collider.GlobalPosition - colliderExtents;
-            var colliderSize = collider.BoxSize * collider.GlobalScale;
-
-            if (Collision.RectsCollide(moverPosition, moverSize, colliderPosition, colliderSize))
-            {
-                var windowX = Collision.DifferenceWindow(moverPosition.X, moverPosition.X + moverSize.X, colliderPosition.X, colliderPosition.X + colliderSize.X);
-                var windowY = Collision.DifferenceWindow(moverPosition.Y, moverPosition.Y + moverSize.Y, colliderPosition.Y, colliderPosition.Y + colliderSize.Y);
-                if (Math.Abs(windowX) < Math.Abs(windowY))
-                {
-                    ResolveX(moverPosition, moverSize, colliderPosition, colliderSize, ref velocity, ref position);
-                    moverPosition = mover.GlobalPosition - moverExtents;
-                    if (Collision.RectsCollide(moverPosition, moverSize, colliderPosition, colliderSize))
-                        ResolveY(moverPosition, moverSize, colliderPosition, colliderSize, ref velocity, ref position);
-                }
-                else if (Math.Abs(windowX) > Math.Abs(windowY))
-                {
-                    ResolveY(moverPosition, moverSize, colliderPosition, colliderSize, ref velocity, ref position);
-                    moverPosition = mover.GlobalPosition - moverExtents;
-                    if (Collision.RectsCollide(moverPosition, moverSize, colliderPosition, colliderSize))
-                        ResolveX(moverPosition, moverSize, colliderPosition, colliderSize, ref velocity, ref position);
-                }
-            }
+                    MoverPosition.Y,
+                    MoverEndPosition.Y,
+                    ColliderPosition.Y,
+                    ColliderEndPosition.Y,
+                    ref Velocity.Y,
+                    ref PositionOffset.Y);
         }
     }
 }

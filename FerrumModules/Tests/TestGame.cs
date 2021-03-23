@@ -81,6 +81,11 @@ namespace Crossfrog.Ferrum.Tests
             var shape3 = collisionBody2.AddChild(new HitboxShape(64, 64));
             //shape3.SetAsBox(new Vector2(16, 16));
 
+            var shape4 = CurrentScene.AddChild(new KinematicHitbox());
+            shape4.AddChild(new HitboxShape(32, 32));
+            shape4.PositionOffset = new Vector2(-64, -32);
+            shape4.Velocity = new Vector2(-0.25f, 0);
+
             //CurrentScene["Punk"].Visible = false;
 
             var testAnim = new Animation<Vector2>("test", true,
@@ -103,6 +108,8 @@ namespace Crossfrog.Ferrum.Tests
             testTileSet2.Infinite = true;
             testTileSet2.ScaleOffset = new Vector2(1f, 1f);
 
+            testTileSet2.Visible = false;
+
             var testCamera = mario.AddChild(new Camera());
             testCamera.Name = "Camera";
             //testCamera.Centered = false;
@@ -117,6 +124,9 @@ namespace Crossfrog.Ferrum.Tests
 
             mario2.ColorOffset = new Color(Color.White, 0.5f);
             //testTileSet2.Visible = false;
+
+            CurrentScene["Tile Layer 1"].Visible = false;
+            CurrentScene["Tile Layer 2"].Visible = false;
 
             Input.SetAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             Input.SetAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);
@@ -133,6 +143,9 @@ namespace Crossfrog.Ferrum.Tests
             var player = CurrentScene["Player"] as KinematicHitbox;
             Console.WriteLine(player.PositionOffset - prevVel);
             prevVel = player.PositionOffset;
+            //player.AngleOffset += MathHelper.Pi / 160;
+
+
 
             var speed = 1f;
 
