@@ -7,8 +7,9 @@ namespace Crossfrog.Ferrum.Engine.Physics
     public class KinematicHitbox : StaticHitbox
     {
         public const int Iterations = 32;
+        public const float MinDifferenceWindow = 0.5f;
+        public const int VelocityRoundingPlaces = 4;
         public Vector2 Velocity;
-        public float MinDifferenceWindow = 0.5f;
         public Vector2 Bounceback = Vector2.Zero;
 
         private Vector2 MoverExtents;
@@ -78,6 +79,10 @@ namespace Crossfrog.Ferrum.Engine.Physics
                             ResolveX();
                     }
                 }
+                else
+                {
+                    Velocity *= Bounceback;
+                }    
             }
 
             UpdateMoverPosition(mover);
@@ -134,6 +139,8 @@ namespace Crossfrog.Ferrum.Engine.Physics
             OnFloor = OnCeiling = OnLeftWall = OnRightWall = false;
             ParentScale = Parent?.GlobalScale ?? new Vector2(1, 1);
 
+            Velocity = new Vector2(Misc.RoundedFloat(Velocity.X, VelocityRoundingPlaces), Misc.RoundedFloat(Velocity.Y, VelocityRoundingPlaces));
+
             for (int i = 0; i < Iterations; i++)
             {
                 if (Velocity == Vector2.Zero) break;
@@ -143,7 +150,8 @@ namespace Crossfrog.Ferrum.Engine.Physics
                 {
                     if (body.Parent == this) continue;
 
-                    if (typeof(StaticHitbox).IsAssignableFrom(body.Parent?.GetType()))
+                    var bodyType = body.Parent?.GetType();
+                    if (typeof(StaticHitbox).IsAssignableFrom(bodyType))
                     {
                         var collider = body.Parent as StaticHitbox;
                         foreach (var cBox in collider.Hitboxes)

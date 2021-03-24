@@ -61,17 +61,16 @@ namespace Crossfrog.Ferrum.Tests
 
             var punk = CurrentScene["Punk"];
             var collisionBody = testOffsetter.AddChild(new KinematicHitbox());
-            collisionBody.PositionOffset = new Vector2(0, -64);
             collisionBody.AddChild(punk);
             collisionBody.Name = "Player";
             collisionBody.ScaleOffset *= 2;
-            //collisionBody.Bounceback = new Vector2(0.5f, 0.5f);
+            //collisionBody.Bounceback = new Vector2(0.8f, 0.8f);
 
             var shape = collisionBody.AddChild(new HitboxShape(16, 16));
             //shape.ScaleOffset /= 2;
-            var shapedos = collisionBody.AddChild(new HitboxShape(16, 16));
-            shapedos.PositionOffset.X = 8;
-            shapedos.PositionOffset.Y = 8;
+            //var shapedos = collisionBody.AddChild(new HitboxShape(16, 16));
+            //shapedos.PositionOffset.X = 8;
+            //shapedos.PositionOffset.Y = 8;
             //shape.SetAsRegularShape(8, new Vector2(32, 32));
             //shape.PositionOffset.X = 32;
             //shape.SetAsBox(new Vector2(16, 16));
@@ -87,10 +86,18 @@ namespace Crossfrog.Ferrum.Tests
             var shape3 = collisionBody2.AddChild(new HitboxShape(64, 64));
             //shape3.SetAsBox(new Vector2(16, 16));
 
+            var shape5 = collisionBody2.AddChild(new HitboxShape(64, 64));
+            //shape2.SetAsBox(16);
+            shape5.PositionOffset.X = 128;
+            shape5.PositionOffset.Y = -16;
+
             var shape4 = CurrentScene.AddChild(new KinematicHitbox());
             shape4.AddChild(new HitboxShape(32, 32));
             shape4.PositionOffset = new Vector2(-64, -32);
             shape4.Velocity = new Vector2(-0.25f, 0);
+
+            var movingShape = shape4.AddChild(new HitboxShape(32, 32));
+            movingShape.PositionOffset = new Vector2(-64, -32);
 
             //CurrentScene["Punk"].Visible = false;
 
@@ -121,7 +128,7 @@ namespace Crossfrog.Ferrum.Tests
             //testCamera.Centered = false;
             CurrentScene.Camera = testCamera;
             collisionBody.AddChild(testCamera);
-            testCamera.Zoom = 3f;
+            testCamera.Zoom = 2f;
             mario.PositionOffset = new Vector2(0, 0);
             //mario.ScaleOffset = new Vector2(2, 2);
             //testCamera.PositionOffset.X = 40;
@@ -154,7 +161,7 @@ namespace Crossfrog.Ferrum.Tests
             player.Velocity.Y += 0.25f;
 
             var speed = 0.1f;
-            var decel = 0.95f;
+            var decel = 0.98f;
             Console.WriteLine(player.Velocity.X);
 
             if (Input.ActionPressed("move_right"))
@@ -165,7 +172,7 @@ namespace Crossfrog.Ferrum.Tests
 
             var animPlayer = CurrentScene.GetManager<PropertyAnimator<Vector2>>("AnimPlayer");
 
-            if (Input.ActionJustPressed("fire") && player.OnFloor) player.Velocity.Y = -3f;
+            if (Input.ActionJustPressed("fire")) player.Velocity.Y = -5f;
             //animPlayer.Set(ref CurrentScene["Mario"].PositionOffset);
         }
         public void TestPrint()
