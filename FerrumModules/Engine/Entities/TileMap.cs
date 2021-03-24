@@ -249,7 +249,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
 #if DEBUG
             if (ObjectNamespace == "") throw new Exception("Please set the object namespace.");
 #endif
-
             LoadTMXFile(mapFilePath);
             var fileLoadedScene = new FileLoadedScene<EnumType>(mapFilePath, startingRenderLayer);
             return fileLoadedScene;

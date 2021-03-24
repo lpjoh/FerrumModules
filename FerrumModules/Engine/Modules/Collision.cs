@@ -5,37 +5,51 @@ namespace Crossfrog.Ferrum.Engine.Modules
 {
     public static class Collision
     {
-        public static bool RectsCollide(Rectangle rect1, Rectangle rect2)
+        public static bool RectsCollide(Rectangle rect1, Rectangle rect2, bool includeGrazing = false)
         {
+            if (includeGrazing)
+                return
+                    rect1.X <= rect2.X + rect2.Width &&
+                    rect1.Y <= rect2.Y + rect2.Height &&
+                    rect1.X + rect1.Width >= rect2.X &&
+                    rect1.Y + rect1.Height >= rect2.Y;
+
             return
                 rect1.X < rect2.X + rect2.Width &&
                 rect1.Y < rect2.Y + rect2.Height &&
                 rect1.X + rect1.Width > rect2.X &&
                 rect1.Y + rect1.Height > rect2.Y;
         }
-        public static bool RectsCollide(Vector2 rect1Pos, Vector2 rect1Size, Vector2 rect2Pos, Vector2 rect2Size)
+        public static bool RectsCollide(Vector2 rect1Pos, Vector2 rect1Size, Vector2 rect2Pos, Vector2 rect2Size, bool includeGrazing = false)
         {
+            if (includeGrazing)
+                return
+                rect1Pos.X <= rect2Pos.X + rect2Size.X &&
+                rect1Pos.Y <= rect2Pos.Y + rect2Size.Y &&
+                rect1Pos.X + rect1Size.X >= rect2Pos.X &&
+                rect1Pos.Y + rect1Size.Y >= rect2Pos.Y;
+
             return
                 rect1Pos.X < rect2Pos.X + rect2Size.X &&
                 rect1Pos.Y < rect2Pos.Y + rect2Size.Y &&
                 rect1Pos.X + rect1Size.X > rect2Pos.X &&
                 rect1Pos.Y + rect1Size.Y > rect2Pos.Y;
         }
-        public static float DifferenceWindow(float moverStart, float moverEnd, float colliderStart, float colliderEnd)
+        public static float DifferenceWindow(float moverStart, float moverEnd, float colliderStart, float colliderEnd, float scale)
         {
             if (moverStart <= colliderStart && moverEnd > colliderStart)
-                return colliderStart - moverEnd;
+                return (colliderStart - moverEnd) / scale;
             else if (colliderStart <= moverStart && colliderEnd > moverStart)
-                return colliderEnd - moverStart;
+                return (colliderEnd - moverStart) / scale;
             return 0.0f;
         }
-        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axisRef)
+        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axisRef, float scale, float bounceback)
         {
             if (velocity > 0)
-                axisRef -= moverEnd - colliderStart;
+                axisRef -= (moverEnd - colliderStart) / scale;
             else if (velocity < 0)
-                axisRef += colliderEnd - moverStart;
-            velocity = 0;
+                axisRef += (colliderEnd - moverStart) / scale;
+            velocity = -velocity * bounceback;
         }
         private static float DotProduct(Vector2 v1, Vector2 v2)
         {

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using Crossfrog.Ferrum.Engine.Entities;
 using Crossfrog.Ferrum.Engine.Modules;
 
 namespace Crossfrog.Ferrum.Engine
@@ -84,9 +85,9 @@ namespace Crossfrog.Ferrum.Engine
 #if DEBUG
         private Texture2D PhysicsDebugTexture;
 #endif
-
         protected override void LoadContent()
         {
+            TileMap.ObjectNamespace = GetType().Namespace;
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _renderTarget = new RenderTarget2D(
                 GraphicsDevice,
@@ -111,18 +112,14 @@ namespace Crossfrog.Ferrum.Engine
             PhysicsDebugTexture = new Texture2D(GraphicsDevice, 1, 1);
             PhysicsDebugTexture.SetData(new Color[] { Color.White });
 #endif
-
             UpdateRenderSize();
             LoadGameContent();
         }
-
         protected override void UnloadContent()
         {
             base.UnloadContent();
             _spriteBatch.Dispose();
         }
-
-
         public virtual void LoadGameContent() { }
 
         protected override void Update(GameTime gameTime)
@@ -138,7 +135,6 @@ namespace Crossfrog.Ferrum.Engine
             Input.UpdateActionStates();
         }
         public virtual void UpdateGame(float delta) { }
-
         private Matrix GetViewMatrix(Camera camera)
         {
             var cameraPosition = -camera.GlobalPosition;
@@ -171,7 +167,6 @@ namespace Crossfrog.Ferrum.Engine
                 MathHelper.Max(tl.Y, MathHelper.Max(tr.Y, MathHelper.Max(bl.Y, br.Y))));
             return new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
-
         public Rectangle VisibleAreaBox { get; private set; }
         protected override void Draw(GameTime gameTime)
         {
@@ -203,7 +198,6 @@ namespace Crossfrog.Ferrum.Engine
 
             _spriteBatch.End();
         }
-
 #if DEBUG
         public static float DebugOpacity = 0.1f;
         public static Color DebugBoxColor = new Color(Color.Navy, DebugOpacity);
@@ -222,7 +216,6 @@ namespace Crossfrog.Ferrum.Engine
             }
         }
 #endif
-
         public void OnWindowResize(object sender, EventArgs e)
         {
             UpdateRenderSize();
