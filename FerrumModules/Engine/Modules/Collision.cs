@@ -43,13 +43,12 @@ namespace Crossfrog.Ferrum.Engine.Modules
                 return (colliderEnd - moverStart) / scale;
             return 0.0f;
         }
-        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axisRef, float scale, float bounceback)
+        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axis, float scale)
         {
             if (velocity > 0)
-                axisRef -= (moverEnd - colliderStart) / scale;
+                axis -= (moverEnd - colliderStart) / scale;
             else if (velocity < 0)
-                axisRef += (colliderEnd - moverStart) / scale;
-            velocity = -velocity * bounceback;
+                axis += (colliderEnd - moverStart) / scale;
         }
         private static float DotProduct(Vector2 v1, Vector2 v2)
         {

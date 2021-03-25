@@ -1,8 +1,8 @@
-﻿namespace Crossfrog.Ferrum.Engine.Managers
+﻿namespace Crossfrog.Ferrum.Engine.Components
 {
     public delegate void Timeout();
 
-    public class Timer : Manager
+    public class Timer : Component
     {
         public float TimeoutSeconds;
         public float TimeLeft;

@@ -20,7 +20,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 sourceRect.Width = _tileWidth;
             }
         }
-
         private int _tileHeight;
         public int TileHeight
         {
@@ -31,6 +30,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 sourceRect.Height = _tileHeight;
             }
         }
+        public Vector2 TileSize => new Vector2(TileWidth, TileHeight);
 
         private int _currentFrame = 0;
         public int CurrentFrame

@@ -129,6 +129,13 @@ namespace Crossfrog.Ferrum.Engine
                 Exit();
 
             var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            foreach (var e in CurrentScene.EntitiesToBeDeleted) e.Parent?.RemoveObjectFromList(e.Parent.Children, e);
+            CurrentScene.EntitiesToBeDeleted.Clear();
+            foreach (var m in CurrentScene.ComponentsToBeDeleted) m.Parent?.RemoveObjectFromList(m.Parent.Components, m);
+            CurrentScene.ComponentsToBeDeleted.Clear();
+
+            CurrentScene.PreCollision();
             CurrentScene.Update(delta);
             UpdateGame(delta);
 
@@ -206,7 +213,6 @@ namespace Crossfrog.Ferrum.Engine
         public static Vector2 DebugVertexScale = new Vector2(2, 2);
         public void RenderPhysicsDebug(SpriteBatch spriteBatch)
         {
-
             foreach (var body in CurrentScene.PhysicsWorld)
             {
                 spriteBatch.Draw(PhysicsDebugTexture, body.BoundingBox, DebugBoxColor);

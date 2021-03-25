@@ -6,9 +6,7 @@ namespace Crossfrog.Ferrum.Engine.Physics
 {
     public class KinematicHitbox : StaticHitbox
     {
-        public const int Iterations = 32;
-        public const float MinDifferenceWindow = 0.5f;
-        public const int VelocityRoundingPlaces = 4;
+        public const int Iterations = 8;
         public Vector2 Velocity;
         public Vector2 Bounceback = Vector2.Zero;
 
@@ -42,10 +40,29 @@ namespace Crossfrog.Ferrum.Engine.Physics
 
             MoverColliderDifferenceWindow = new Vector2(windowX, windowY);
         }
-        private void UpdateMoverPosition(HitboxShape mover)
+        private void CheckCollisionBools()
         {
-            MoverPosition = mover.GlobalPosition - MoverExtents;
-            MoverEndPosition = MoverPosition + MoverSize;
+            if (MoverColliderIntersect(true))
+            {
+                OnFloor |= Math.Round(MoverEndPosition.Y) == Math.Round(ColliderPosition.Y);
+                OnCeiling |= Math.Round(MoverPosition.Y) == Math.Round(ColliderEndPosition.Y);
+                OnLeftWall |= Math.Round(MoverPosition.X) == Math.Round(ColliderEndPosition.X);
+                OnRightWall |= Math.Round(MoverEndPosition.X) == Math.Round(ColliderPosition.X);
+            }
+        }
+        private void ResolveStatic()
+        {
+            UpdateDifferenceWindow();
+            if (Math.Abs(MoverColliderDifferenceWindow.X) < Math.Abs(MoverColliderDifferenceWindow.Y))
+            {
+                PositionOffset.X += MoverColliderDifferenceWindow.X;
+                Velocity.X *= -Bounceback.X;
+            } 
+            else
+            {
+                PositionOffset.Y += MoverColliderDifferenceWindow.Y;
+                Velocity.Y *= -Bounceback.Y;
+            }
         }
         public void ResolveFor(HitboxShape mover, HitboxShape collider)
         {
@@ -60,86 +77,13 @@ namespace Crossfrog.Ferrum.Engine.Physics
             ColliderEndPosition = ColliderPosition + ColliderSize;
 
             if (MoverColliderIntersect())
-            {
-                UpdateDifferenceWindow();
-                if (Math.Abs(MoverColliderDifferenceWindow.X) > MinDifferenceWindow || Math.Abs(MoverColliderDifferenceWindow.Y) > MinDifferenceWindow)
-                {
-                    if (Math.Abs(MoverColliderDifferenceWindow.X) < Math.Abs(MoverColliderDifferenceWindow.Y))
-                    {
-                        ResolveX();
-                        UpdateMoverPosition(mover);
-                        if (MoverColliderIntersect())
-                            ResolveY();
-                    }
-                    else
-                    {
-                        ResolveY();
-                        UpdateMoverPosition(mover);
-                        if (MoverColliderIntersect())
-                            ResolveX();
-                    }
-                }
-                else
-                {
-                    Velocity *= Bounceback;
-                }    
-            }
-
-            UpdateMoverPosition(mover);
-            ResolveStatic();
-        }
-        private void ResolveX()
-        {
-            Collision.Resolve1D(
-                    MoverPosition.X,
-                    MoverEndPosition.X,
-                    ColliderPosition.X,
-                    ColliderEndPosition.X,
-                    ref Velocity.X,
-                    ref PositionOffset.X,
-                    ParentScale.X,
-                    Bounceback.X);
-        }
-        private void ResolveY()
-        {
-            Collision.Resolve1D(
-                    MoverPosition.Y,
-                    MoverEndPosition.Y,
-                    ColliderPosition.Y,
-                    ColliderEndPosition.Y,
-                    ref Velocity.Y,
-                    ref PositionOffset.Y,
-                    ParentScale.Y,
-                    Bounceback.Y);
-        }
-        private void CheckCollisionBools()
-        {
-            if (MoverColliderIntersect(true))
-            {
-                OnFloor |= Math.Round(MoverEndPosition.Y) == Math.Round(ColliderPosition.Y);
-                OnCeiling |= Math.Round(MoverPosition.Y) == Math.Round(ColliderEndPosition.Y);
-                OnLeftWall |= Math.Round(MoverPosition.X) == Math.Round(ColliderEndPosition.X);
-                OnRightWall |= Math.Round(MoverEndPosition.X) == Math.Round(ColliderPosition.X);
-            }
-        }
-        private void ResolveStatic()
-        {
-            if (MoverColliderIntersect())
-            {
-                UpdateDifferenceWindow();
-                if (Math.Abs(MoverColliderDifferenceWindow.X) > Math.Abs(MoverColliderDifferenceWindow.Y))
-                    PositionOffset.X += MoverColliderDifferenceWindow.X;
-                else
-                    PositionOffset.Y += MoverColliderDifferenceWindow.Y;
-            }
+                ResolveStatic();
         }
         public override void Update(float delta)
         {
             base.Update(delta);
             OnFloor = OnCeiling = OnLeftWall = OnRightWall = false;
             ParentScale = Parent?.GlobalScale ?? new Vector2(1, 1);
-
-            Velocity = new Vector2(Misc.RoundedFloat(Velocity.X, VelocityRoundingPlaces), Misc.RoundedFloat(Velocity.Y, VelocityRoundingPlaces));
 
             for (int i = 0; i < Iterations; i++)
             {

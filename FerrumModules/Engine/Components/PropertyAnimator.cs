@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 
-namespace Crossfrog.Ferrum.Engine.Managers
+namespace Crossfrog.Ferrum.Engine.Components
 {
     public enum Interpolation { Linear, Cosine, Constant, Preset }
 
-    public class PropertyAnimator<T> : Manager
+    public class PropertyAnimator<T> : Component
     {
         private readonly Dictionary<string, Animation<T>> animationNameDict = new Dictionary<string, Animation<T>>();
         private Animation<T> _currentAnimation;

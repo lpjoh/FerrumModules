@@ -20,14 +20,5 @@ namespace Crossfrog.Ferrum.Engine.Modules
 
             return baseList;
         }
-        public static float RoundedFloat(float value, int binaryPlaces)
-        {
-            int multiple = 1;
-
-            for (int i = 0; i < binaryPlaces; i++)
-                multiple *= 2;
-
-            return (float)(int)(value * multiple) / multiple;
-        }
     }
 }

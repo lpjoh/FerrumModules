@@ -73,7 +73,6 @@ namespace Crossfrog.Ferrum.Engine
                 return globalOpaque;
             }
         }
-
         public float OpacityOffset
         {
             get => Misc.NormalizedByte(ColorOffset.A);
@@ -149,33 +148,30 @@ namespace Crossfrog.Ferrum.Engine
 
         #endregion
 
-        #region Managers
+        #region Components
 
-        public List<Manager> Managers { get; private set; } = new List<Manager>();
+        public List<Component> Components { get; private set; } = new List<Component>();
 
-        public bool HasManager(Manager manager)
+        public bool HasComponent(Component Component)
         {
-            return ObjectListHas(Managers, manager);
+            return ObjectListHas(Components, Component);
         }
-        public bool HasManager(string name)
+        public bool HasComponent(string name)
         {
-            return ObjectListHas(Managers, name);
+            return ObjectListHas(Components, name);
         }
-
-        public ManagerType GetManager<ManagerType>(int index) where ManagerType : Manager
+        public ComponentType GetComponent<ComponentType>(int index) where ComponentType : Component
         {
-            return (ManagerType)GetFromObjectListByIndex(Managers, index);
+            return (ComponentType)GetFromObjectListByIndex(Components, index);
         }
-
-        public ManagerType GetManager<ManagerType>(string managerName) where ManagerType : Manager
+        public ComponentType GetComponent<ComponentType>(string ComponentName) where ComponentType : Component
         {
-            return (ManagerType)GetFromObjectListByName(Managers, managerName);
+            return (ComponentType)GetFromObjectListByName(Components, ComponentName);
         }
-
-        public ManagerType AddManager<ManagerType>(ManagerType manager) where ManagerType : Manager
+        public ComponentType AddComponent<ComponentType>(ComponentType Component) where ComponentType : Component
         {
-            manager.Parent = this;
-            return manager;
+            Component.Parent = this;
+            return Component;
         }
 
         #endregion
@@ -237,7 +233,7 @@ namespace Crossfrog.Ferrum.Engine
         public override void Update(float delta)
         {
             base.Update(delta);
-            foreach (var m in Managers)
+            foreach (var m in Components)
                 if (!m.Paused) m.Update(delta);
             foreach (var c in Children)
                 if (!c.Paused) c.Update(delta);
@@ -247,7 +243,7 @@ namespace Crossfrog.Ferrum.Engine
             base.Exit();
 
             foreach (var c in Children) c.Exit();
-            foreach (var m in Managers) m.Exit();
+            foreach (var m in Components) m.Exit();
             Scene.EntitiesToBeDeleted.Add(this);
         }
 
@@ -256,6 +252,10 @@ namespace Crossfrog.Ferrum.Engine
         {
             if (!Visible) return;
             foreach (var c in Children) c.Render(spriteBatch);
+        }
+        public virtual void PreCollision()
+        {
+            foreach (var c in Children) c.PreCollision();
         }
     }
 }

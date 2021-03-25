@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Crossfrog.Ferrum.Engine.Modules;
+using Crossfrog.Ferrum.Engine.Physics;
 
 using TiledSharp;
 
@@ -30,6 +31,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
         public bool InfiniteX = false;
         public bool InfiniteY = false;
 
+        public bool CollisionActive = false;
+
         private const string mapFilesDirectory = "Content/Maps";
 
         private static readonly Dictionary<string, TmxMap> mapFileDict = new Dictionary<string, TmxMap>();
@@ -44,6 +47,105 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 InfiniteX = value;
                 InfiniteY = value;
             }
+        }
+
+        private StaticHitbox Collider;
+        private static Vector2 colliderCenter = new Vector2(0.5f, 0.5f);
+
+        private void CreateHitbox()
+        {
+            Collider.AddChild(new HitboxShape(1, 1));
+        }
+        public override void Init()
+        {
+            base.Init();
+            Collider = AddChild(new StaticHitbox());
+        }
+        public override void PreCollision()
+        {
+            base.PreCollision();
+            if (!CollisionActive) return;
+
+            var hitboxCount = 0;
+            Collider.ScaleOffset = TileSize;
+            var shapesBefore = Scene.PhysicsWorld.Count;
+            for (int s = 0; s < shapesBefore; s++)
+            {
+                var shape = Scene.PhysicsWorld[s];
+                if (shape.Parent == Collider)
+                    continue;
+
+                var shapeBox = shape.BoundingBox;
+
+                var tileScale = TileSize * GlobalScale;
+                var boxStart = (new Vector2(shapeBox.X, shapeBox.Y) - GlobalPosition) / tileScale;
+                var boxEnd = boxStart + new Vector2(shapeBox.Width, shapeBox.Height) / tileScale;
+
+                if (typeof(KinematicHitbox).IsAssignableFrom(shape.Parent.GetType()))
+                {
+                    var kinematic = shape.Parent as KinematicHitbox;
+                    var tileSpaceVelocity = kinematic.Velocity / TileSize;
+
+                    if (kinematic.Velocity.X < 0)
+                        boxStart.X += tileSpaceVelocity.X;
+                    else
+                        boxEnd.X += tileSpaceVelocity.X;
+
+                    if (kinematic.Velocity.Y < 0)
+                        boxStart.Y += tileSpaceVelocity.Y;
+                    else
+                        boxEnd.Y += tileSpaceVelocity.Y;
+                }
+
+                var rowStart = (int)boxStart.Y - 1;
+                var rowEnd = (int)boxEnd.Y + 1;
+                var columnStart = (int)boxStart.X - 1;
+                var columnEnd = (int)boxEnd.X + 1;
+
+                for (int i = rowStart; i < rowEnd; i++)
+                {
+                    int tileRowIndex;
+                    if (i >= Height) break;
+                    if (i < 0) continue;
+                    tileRowIndex = i;
+
+                    HitboxShape workingHitbox = null;
+                    for (int j = columnStart; j < columnEnd; j++)
+                    {
+                        int tileColumnIndex;
+
+                        if (j >= Width) break;
+                        if (j < 0) continue;
+                        tileColumnIndex = j;
+
+                        if (MapValues[tileRowIndex, tileColumnIndex] > 0)
+                        {
+                            if (workingHitbox == null)
+                            {
+                                hitboxCount++;
+                                if (hitboxCount > Collider.Hitboxes.Count)
+                                    CreateHitbox();
+
+                                workingHitbox = Collider.Hitboxes[hitboxCount - 1];
+                                workingHitbox.PositionOffset = new Vector2(tileColumnIndex, tileRowIndex) + colliderCenter;
+                                workingHitbox.ScaleOffset.X = 1;
+                            }
+                            else
+                            {
+                                workingHitbox.ScaleOffset.X += 1;
+                                workingHitbox.PositionOffset.X += 1 - colliderCenter.X;
+                            }
+                        }
+                        else
+                        {
+                            workingHitbox = null;
+                        }
+                    }
+                }
+            }
+
+            for (int i = hitboxCount; i < Collider.Hitboxes.Count; i++)
+                Collider.Hitboxes[i].Exit();
         }
 
         public TileMap(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false)
@@ -112,9 +214,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
             var cameraBoxPosition = new Vector2(cameraBox.X, cameraBox.Y);
             var cameraBoxSize = new Vector2(cameraBox.Width, cameraBox.Height);
 
-            var globalTileSize = new Vector2(TileWidth, TileHeight);
-            var tileFrameStart = (cameraBoxPosition - GlobalPosition) / globalTileSize / GlobalScale;
-            var tileFrameEnd = cameraBoxSize / globalTileSize / GlobalScale + tileFrameStart;
+            var tileFrameStart = (cameraBoxPosition - GlobalPosition) / TileSize / GlobalScale;
+            var tileFrameEnd = cameraBoxSize / TileSize / GlobalScale + tileFrameStart;
 
             var tileFrameStartX = (int)tileFrameStart.X - 1;
             var tileFrameStartY = (int)tileFrameStart.Y - 1;
@@ -126,7 +227,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
             for (int i = tileFrameStartY; i < tileFrameEndY; i++)
             {
                 int tileRowIndex;
-                if (InfiniteY) tileRowIndex = Misc.SignConsciousModulus(i, Height);
+                if (InfiniteY)
+                    tileRowIndex = Misc.SignConsciousModulus(i, Height);
                 else
                 {
                     if (i >= Height) break;
@@ -136,7 +238,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 for (int j = tileFrameStartX; j < tileFrameEndX; j++)
                 {
                     int tileColumnIndex;
-                    if (InfiniteX) tileColumnIndex = Misc.SignConsciousModulus(j, Width);
+                    if (InfiniteX)
+                        tileColumnIndex = Misc.SignConsciousModulus(j, Width);
                     else
                     {
                         if (j >= Width) break;
@@ -144,7 +247,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
                         tileColumnIndex = j;
                     }
 
-                    PositionOffset = new Vector2(j, i) * globalTileSize * GlobalScale + originalPosition;
+                    PositionOffset = new Vector2(j, i) * TileSize * GlobalScale + originalPosition;
 
                     var currentTileGid = MapValues[tileRowIndex, tileColumnIndex];
                     if ((currentTileGid < currentTileSet.FirstGid) || (currentTileGid > currentTileSet.LastGid))

@@ -17,7 +17,7 @@ namespace Crossfrog.Ferrum.Engine
         public List<CollisionShape> PhysicsWorld = new List<CollisionShape>();
 
         public List<Entity> EntitiesToBeDeleted = new List<Entity>();
-        public List<Manager> ManagersToBeDeleted = new List<Manager>();
+        public List<Component> ComponentsToBeDeleted = new List<Component>();
 
         public Scene()
         {
@@ -25,17 +25,6 @@ namespace Crossfrog.Ferrum.Engine
             Camera.Name = "Camera";
             Camera.Centered = false;
         }
-
-        public override void Update(float delta)
-        {
-            base.Update(delta);
-
-            foreach (var e in EntitiesToBeDeleted) e.Parent?.RemoveObjectFromList(e.Parent.Children, e);
-            EntitiesToBeDeleted.Clear();
-            foreach (var m in ManagersToBeDeleted) m.Parent?.RemoveObjectFromList(m.Parent.Managers, m);
-            ManagersToBeDeleted.Clear();
-        }
-
         public override void Exit()
         {
 #if DEBUG

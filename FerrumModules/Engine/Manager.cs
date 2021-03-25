@@ -1,14 +1,14 @@
 ﻿namespace Crossfrog.Ferrum.Engine
 {
-    public class Manager : ActiveObject
+    public class Component : ActiveObject
     {
         public override Entity Parent
         {
             set
             {
-                var oldSiblings = _parent?.Managers;
+                var oldSiblings = _parent?.Components;
                 _parent = value;
-                AddObjectToList(value.Managers, oldSiblings, this);
+                AddObjectToList(value.Components, oldSiblings, this);
             }
         }
         public Scene Scene => Parent.Scene;
@@ -18,7 +18,7 @@
             set
             {
 #if DEBUG
-                Parent?.AssertNameIsUniqueInObjectList(Parent.Managers, value);
+                Parent?.AssertNameIsUniqueInObjectList(Parent.Components, value);
 #endif
                 _name = value;
             }
@@ -27,7 +27,7 @@
         public override void Exit()
         {
             base.Exit();
-            Scene.ManagersToBeDeleted.Add(this);
+            Scene.ComponentsToBeDeleted.Add(this);
         }
     }
 }

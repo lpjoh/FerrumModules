@@ -4,13 +4,13 @@ using Crossfrog.Ferrum.Engine;
 
 namespace Crossfrog.Ferrum.Tests
 {
-    public class TestManager : Manager
+    public class TestComponent : Component
     {
         private int counter = 0;
 
         public override void Init()
         {
-            Console.Write("Manager Initalized! Yay!!!!");
+            Console.Write("Component Initalized! Yay!!!!");
         }
 
         public override void Update(float delta)
