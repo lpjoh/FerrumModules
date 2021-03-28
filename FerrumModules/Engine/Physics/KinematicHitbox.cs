@@ -4,7 +4,7 @@ using Crossfrog.Ferrum.Engine.Modules;
 
 namespace Crossfrog.Ferrum.Engine.Physics
 {
-    public class KinematicHitbox : StaticHitbox
+    public class KinematicHitbox : HitboxCollider
     {
         public const int Iterations = 8;
         public Vector2 Velocity;
@@ -95,9 +95,9 @@ namespace Crossfrog.Ferrum.Engine.Physics
                     if (body.Parent == this) continue;
 
                     var bodyType = body.Parent?.GetType();
-                    if (typeof(StaticHitbox).IsAssignableFrom(bodyType))
+                    if (typeof(HitboxCollider).IsAssignableFrom(bodyType))
                     {
-                        var collider = body.Parent as StaticHitbox;
+                        var collider = body.Parent as HitboxCollider;
                         foreach (var cBox in collider.Hitboxes)
                         {
                             foreach (var mBox in Hitboxes)

@@ -23,16 +23,17 @@ namespace Crossfrog.Ferrum.Tests
 
             var player = CurrentScene.AddChild(new TestPlayer());
             player.PositionOffset.Y = -64;
-            var floor = CurrentScene.AddChild(new StaticHitbox());
+            var floor = CurrentScene.AddChild(new KinematicHitbox());
             floor.PositionOffset.Y = 64;
             floor.ScaleOffset.X = 6;
             floor.AddChild(new HitboxShape(16, 16));
             floor.AddChild(new StaticSprite("mario", 16, 16, 1));
+            floor.Name = "Floor";
 
             var tileSet = CurrentScene.AddChild(new TileMap("big"));
             tileSet.Name = "Tile";
             tileSet.ScaleOffset *= 1.5f;
-            tileSet.PositionOffset.X = 75;
+            //tileSet.PositionOffset.X = 75;
             tileSet.PositionOffset.Y = 32;
             tileSet.CollisionActive = true;
 

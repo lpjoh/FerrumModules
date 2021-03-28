@@ -74,7 +74,7 @@ namespace Crossfrog.Ferrum.Engine.Modules
             }
             return projectionLine;
         }
-        private static bool CheckOverlapSAT(Vector2[] shape1, Vector2[] shape2)
+        private static bool CheckOverlapSAT(Vector2[] shape1, Vector2[] shape2, bool includeGrazing = false)
         {
             for (int i = 0; i < shape1.Length; i++)
             {
@@ -85,14 +85,22 @@ namespace Crossfrog.Ferrum.Engine.Modules
                 var firstProjection = ProjectLine(shape1, edgeNormal);
                 var secondProjection = ProjectLine(shape2, edgeNormal);
 
-                if (!(firstProjection.Start <= secondProjection.End && firstProjection.End >= secondProjection.Start))
-                    return false;
+                if (includeGrazing)
+                {
+                    if (!(firstProjection.Start <= secondProjection.End && firstProjection.End >= secondProjection.Start))
+                        return false;
+                }
+                else
+                {
+                    if (!(firstProjection.Start < secondProjection.End && firstProjection.End > secondProjection.Start))
+                        return false;
+                }
             }
             return true;
         }
-        public static bool ConvexPolysCollide(Vector2[] shape1, Vector2[] shape2)
+        public static bool ConvexPolysCollide(Vector2[] shape1, Vector2[] shape2, bool includeGrazing = false)
         {
-            return CheckOverlapSAT(shape1, shape2) && CheckOverlapSAT(shape2, shape1);
+            return CheckOverlapSAT(shape1, shape2, includeGrazing) && CheckOverlapSAT(shape2, shape1, includeGrazing);
         }
     }
 }

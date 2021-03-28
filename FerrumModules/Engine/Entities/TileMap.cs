@@ -49,7 +49,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
             }
         }
 
-        private StaticHitbox Collider;
+        private HitboxCollider Collider;
         private static Vector2 colliderCenter = new Vector2(0.5f, 0.5f);
 
         private void CreateHitbox()
@@ -72,7 +72,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
             for (int s = 0; s < shapesBefore; s++)
             {
                 var shape = Scene.PhysicsWorld[s];
-                if (shape.Parent == Collider)
+                if (shape.Parent == Collider || typeof(StaticHitbox).IsAssignableFrom(shape.Parent?.GetType()))
                     continue;
 
                 var shapeBox = shape.BoundingBox;

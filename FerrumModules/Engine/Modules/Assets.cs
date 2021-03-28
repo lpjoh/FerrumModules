@@ -4,6 +4,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Crossfrog.Ferrum.Engine.Modules
 {
+    public struct Asset<T>
+    {
+        public T Content;
+        public int References;
+    }
     public static class Assets
     {
         public static Dictionary<string, Texture2D> Textures { get; private set; } = new Dictionary<string, Texture2D>();

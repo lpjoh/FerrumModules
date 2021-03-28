@@ -10,7 +10,7 @@ namespace Crossfrog.Ferrum.Tests
     public class TestPlayer : KinematicHitbox
     {
         public const float Speed = 0.1f;
-        public const float JumpHeight = 6f;
+        public const float JumpHeight = 7f;
         public const float Gravity = 0.25f;
         public const float Decel = 0.8f;
 
@@ -21,7 +21,7 @@ namespace Crossfrog.Ferrum.Tests
 
         public override void Init()
         {
-            ScaleOffset *= 1;
+            ScaleOffset *= 2;
             Sprite = AddChild(new StaticSprite("mario", 16, 16));
             Hitbox = AddChild(new HitboxShape(12, 14));
             Hitbox.PositionOffset.Y = 1;
