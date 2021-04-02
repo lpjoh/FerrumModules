@@ -32,10 +32,11 @@ namespace Crossfrog.Ferrum.Tests
 
             var tileSet = CurrentScene.AddChild(new TileMap("big"));
             tileSet.Name = "Tile";
-            tileSet.ScaleOffset *= 1.5f;
+            tileSet.ScaleOffset *= 2f;
             //tileSet.PositionOffset.X = 75;
             tileSet.PositionOffset.Y = 32;
             tileSet.CollisionActive = true;
+            tileSet.SetCameraBounds();
 
             Input.SetAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);
             Input.SetAction("move_right", Keys.Right, Buttons.LeftThumbstickRight);

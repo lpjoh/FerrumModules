@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -138,7 +137,6 @@ namespace Crossfrog.Ferrum.Engine
         private Matrix GetViewMatrix(Camera camera)
         {
             var cameraPosition = -camera.GlobalPosition;
-
             var matrix =
                 Matrix.CreateTranslation(new Vector3(cameraPosition.X, cameraPosition.Y, 0)) *
                 Matrix.CreateRotationZ(camera.AngleOffset) *
@@ -150,9 +148,40 @@ namespace Crossfrog.Ferrum.Engine
                 matrix *= Matrix.CreateTranslation(new Vector3(cameraOffset.X, cameraOffset.Y, 0));
             }
 
-            return matrix;
+            var cameraBox = GetVisibleAreaBoxF(matrix);
+
+            if (camera.ScrollClampEnd.X >= cameraBox.Width)
+                cameraPosition.X = Math.Clamp(-cameraBox.X, -camera.ScrollClampEnd.X + cameraBox.Width, -camera.ScrollClampStart.X);
+            else
+                cameraPosition.X = Math.Clamp(-cameraBox.X, -camera.ScrollClampStart.X, -camera.ScrollClampEnd.X + cameraBox.Width);
+
+            if (camera.ScrollClampEnd.Y >= cameraBox.Height)
+                cameraPosition.Y = Math.Clamp(-cameraBox.Y, -camera.ScrollClampEnd.Y + cameraBox.Height, -camera.ScrollClampStart.Y);
+            else
+                cameraPosition.Y = Math.Clamp(-cameraBox.Y, -camera.ScrollClampStart.Y, -camera.ScrollClampEnd.Y + cameraBox.Height);
+
+            var matrixClamped =
+                Matrix.CreateTranslation(new Vector3(cameraPosition.X, cameraPosition.Y, 0)) *
+                Matrix.CreateRotationZ(camera.AngleOffset) *
+                Matrix.CreateScale(camera.Zoom);
+
+            return matrixClamped;
         }
-        private Rectangle GetVisibleAreaBox(Matrix viewportMatrix)
+        private struct RectangleF
+        {
+            public float X;
+            public float Y;
+            public float Width;
+            public float Height;
+            public RectangleF(float x, float y, float w, float h)
+            {
+                X = x;
+                Y = y;
+                Width = w;
+                Height = h;
+            }
+        }
+        private RectangleF GetVisibleAreaBoxF(Matrix viewportMatrix)
         {
             var invertedMatrix = Matrix.Invert(viewportMatrix);
             var tl = Vector2.Transform(Vector2.Zero, invertedMatrix);
@@ -165,7 +194,12 @@ namespace Crossfrog.Ferrum.Engine
             var max = new Vector2(
                 MathHelper.Max(tl.X, MathHelper.Max(tr.X, MathHelper.Max(bl.X, br.X))),
                 MathHelper.Max(tl.Y, MathHelper.Max(tr.Y, MathHelper.Max(bl.Y, br.Y))));
-            return new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
+            return new RectangleF(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+        }
+        private Rectangle GetVisibleAreaBox(Matrix viewportMatrix)
+        {
+            var rect = GetVisibleAreaBoxF(viewportMatrix);
+            return new Rectangle((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
         }
         public Rectangle VisibleAreaBox { get; private set; }
         protected override void Draw(GameTime gameTime)

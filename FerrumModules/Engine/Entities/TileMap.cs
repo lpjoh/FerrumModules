@@ -162,7 +162,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
             MapValues = new int[mapFile.Height, mapFile.Width];
             LoadMapLayer(mapFilePath, tileLayerID, getNameFromFile);
         }
-
         private static TmxMap LoadTMXFile(string filePath)
         {
             var fullFilePath = mapFilesDirectory + "/" + filePath + ".tmx";
@@ -171,7 +170,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
 
             return mapFileDict[fullFilePath];
         }
-
         private void LoadMapLayer(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false)
         {
             var mapFile = LoadTMXFile(mapFilePath);
@@ -209,6 +207,12 @@ namespace Crossfrog.Ferrum.Engine.Entities
             OpacityOffset = (float)tmxTileLayer.Opacity;
             PositionOffset = new Vector2((float)tmxTileLayer.OffsetX, (float)tmxTileLayer.OffsetY);
             SpawnProperties = tmxTileLayer.Properties;
+        }
+        public void SetCameraBounds()
+        {
+            var camera = Scene.Camera;
+            camera.ScrollClampStart = GlobalPosition;
+            camera.ScrollClampEnd = camera.ScrollClampStart + TileSize * new Vector2(Width, Height) * GlobalScale;
         }
         public override void Render(SpriteBatch spriteBatch)
         {
