@@ -86,7 +86,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
 
         public Sprite(string textureName, int tileWidth, int tileHeight)
         {
-            Texture = Assets.Textures[textureName];
+            Texture = Assets.GetTexture(textureName);
 
             TileWidth = tileWidth;
             TileHeight = tileHeight;

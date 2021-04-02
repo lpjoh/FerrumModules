@@ -28,10 +28,17 @@ namespace Crossfrog.Ferrum.Tests
             Camera = AddChild(new Camera());
             Scene.Camera = Camera;
             Camera.Zoom = 2;
+
+            Area = AddChild(new Sensor());
+            var shape = Area.AddChild(new PolygonShape());
+            shape.SetAsRegularShape(8, 16);
+            shape.PositionOffset.X = 16;
         }
         public override void Update(float delta)
         {
             base.Update(delta);
+
+            Area.AngleOffset += MathHelper.Pi / 160;
 
             Velocity.Y += Gravity;
             if (Input.ActionPressed("move_left"))

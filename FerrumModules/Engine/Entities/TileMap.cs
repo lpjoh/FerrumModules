@@ -50,7 +50,9 @@ namespace Crossfrog.Ferrum.Engine.Entities
         }
 
         private HitboxCollider Collider;
+        private HashSet<Tuple<int, int>> ExistingColliderTiles = new HashSet<Tuple<int, int>>();
         private static Vector2 colliderCenter = new Vector2(0.5f, 0.5f);
+        
 
         private void CreateHitbox()
         {
@@ -118,8 +120,10 @@ namespace Crossfrog.Ferrum.Engine.Entities
                         if (j < 0) continue;
                         tileColumnIndex = j;
 
-                        if (MapValues[tileRowIndex, tileColumnIndex] > 0)
+                        var tilePositionTuple = new Tuple<int, int>(tileRowIndex, tileColumnIndex);
+                        if (MapValues[tileRowIndex, tileColumnIndex] > 0 && (!ExistingColliderTiles.Contains(tilePositionTuple)))
                         {
+                            ExistingColliderTiles.Add(tilePositionTuple);
                             if (workingHitbox == null)
                             {
                                 hitboxCount++;
@@ -146,6 +150,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
 
             for (int i = hitboxCount; i < Collider.Hitboxes.Count; i++)
                 Collider.Hitboxes[i].Exit();
+            ExistingColliderTiles.Clear();
         }
 
         public TileMap(string mapFilePath, int tileLayerID = 0, bool getNameFromFile = false)
@@ -181,7 +186,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
                     var tmxTileset = mapFile.Tilesets[i];
                     var newTileset = new TileSet
                     {
-                        Texture = Assets.Textures[Path.GetFileNameWithoutExtension(tmxTileset.Image.Source)],
+                        Texture = Assets.GetTexture(Path.GetFileNameWithoutExtension(tmxTileset.Image.Source)),
                         FirstGid = tmxTileset.FirstGid,
                         LastGid = tmxTileset.FirstGid + (int)tmxTileset.TileCount - 1
                     };

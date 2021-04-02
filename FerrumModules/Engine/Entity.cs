@@ -152,9 +152,9 @@ namespace Crossfrog.Ferrum.Engine
 
         public List<Component> Components { get; private set; } = new List<Component>();
 
-        public bool HasComponent(Component Component)
+        public bool HasComponent(Component component)
         {
-            return ObjectListHas(Components, Component);
+            return ObjectListHas(Components, component);
         }
         public bool HasComponent(string name)
         {
@@ -164,14 +164,14 @@ namespace Crossfrog.Ferrum.Engine
         {
             return (ComponentType)GetFromObjectListByIndex(Components, index);
         }
-        public ComponentType GetComponent<ComponentType>(string ComponentName) where ComponentType : Component
+        public ComponentType GetComponent<ComponentType>(string componentName) where ComponentType : Component
         {
-            return (ComponentType)GetFromObjectListByName(Components, ComponentName);
+            return (ComponentType)GetFromObjectListByName(Components, componentName);
         }
-        public ComponentType AddComponent<ComponentType>(ComponentType Component) where ComponentType : Component
+        public ComponentType AddComponent<ComponentType>(ComponentType component) where ComponentType : Component
         {
-            Component.Parent = this;
-            return Component;
+            component.Parent = this;
+            return component;
         }
 
         #endregion
@@ -233,8 +233,8 @@ namespace Crossfrog.Ferrum.Engine
         public override void Update(float delta)
         {
             base.Update(delta);
-            foreach (var m in Components)
-                if (!m.Paused) m.Update(delta);
+            foreach (var c in Components)
+                if (!c.Paused) c.Update(delta);
             foreach (var c in Children)
                 if (!c.Paused) c.Update(delta);
         }
@@ -243,7 +243,7 @@ namespace Crossfrog.Ferrum.Engine
             base.Exit();
 
             foreach (var c in Children) c.Exit();
-            foreach (var m in Components) m.Exit();
+            foreach (var c in Components) c.Exit();
             Scene.EntitiesToBeDeleted.Add(this);
         }
 

@@ -31,8 +31,6 @@ namespace Crossfrog.Ferrum.Engine
             }
         }
 
-        private const string TextureDirectory = "Textures";
-
         public FE_Engine(
             int bufferWidth = 1280,
             int bufferHeight = 720,
@@ -67,21 +65,22 @@ namespace Crossfrog.Ferrum.Engine
 
         public SceneType ChangeScene<SceneType>(SceneType scene) where SceneType : Scene
         {
+            foreach (var t in Assets.Textures.Values)
+                t.Dispose();
+            Assets.Textures.Clear();
             CurrentScene = scene;
             scene.Engine = this;
             scene.Init();
             return scene;
         }
-
         protected override void Initialize()
         {
             base.Initialize();
+            Assets.Engine = this;
             InitGame();
             Input.UpdateActionStates();
         }
-
         public virtual void InitGame() { }
-
 #if DEBUG
         private Texture2D PhysicsDebugTexture;
 #endif
@@ -97,17 +96,6 @@ namespace Crossfrog.Ferrum.Engine
                 GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
 
-            DirectoryInfo textureDir = new DirectoryInfo(Content.RootDirectory + "/" + TextureDirectory);
-            FileInfo[] textureFiles = textureDir.GetFiles();
-
-            foreach (var file in textureFiles)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(file.Name);
-
-                var texture = Content.Load<Texture2D>(TextureDirectory + "/" + fileName);
-                Assets.AddTexture(texture, fileName);
-            }
-
 #if DEBUG
             PhysicsDebugTexture = new Texture2D(GraphicsDevice, 1, 1);
             PhysicsDebugTexture.SetData(new Color[] { Color.White });
@@ -115,6 +103,11 @@ namespace Crossfrog.Ferrum.Engine
             UpdateRenderSize();
             LoadGameContent();
         }
+        public T LoadAsset<T>(string directory)
+        {
+            return Content.Load<T>(directory);
+        }
+        
         protected override void UnloadContent()
         {
             base.UnloadContent();
@@ -132,7 +125,7 @@ namespace Crossfrog.Ferrum.Engine
 
             foreach (var e in CurrentScene.EntitiesToBeDeleted) e.Parent?.RemoveObjectFromList(e.Parent.Children, e);
             CurrentScene.EntitiesToBeDeleted.Clear();
-            foreach (var m in CurrentScene.ComponentsToBeDeleted) m.Parent?.RemoveObjectFromList(m.Parent.Components, m);
+            foreach (var c in CurrentScene.ComponentsToBeDeleted) c.Parent?.RemoveObjectFromList(c.Parent.Components, c);
             CurrentScene.ComponentsToBeDeleted.Clear();
 
             CurrentScene.PreCollision();

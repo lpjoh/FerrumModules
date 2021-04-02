@@ -37,9 +37,9 @@ namespace Crossfrog.Ferrum.Engine.Modules
         }
         public static float DifferenceWindow(float moverStart, float moverEnd, float colliderStart, float colliderEnd, float scale)
         {
-            if (moverStart <= colliderStart && moverEnd > colliderStart)
+            if (moverStart <= colliderStart && moverEnd >= colliderStart)
                 return (colliderStart - moverEnd) / scale;
-            else if (colliderStart <= moverStart && colliderEnd > moverStart)
+            else if (colliderStart <= moverStart && colliderEnd >= moverStart)
                 return (colliderEnd - moverStart) / scale;
             return 0.0f;
         }
