@@ -74,12 +74,6 @@ namespace Crossfrog.Ferrum.Engine
             AssertNameIsUniqueInObjectList(list, element.Name);
 #endif
             RemoveObjectFromList(oldList, element);
-            if (typeof(CollisionShape).IsAssignableFrom(typeof(NewObjectType)))
-            {
-                var shape = element as CollisionShape;
-                shape.Scene.PhysicsWorld.Remove(shape);
-            }
-
             list.Add(element);
 
             if (!element.Initialized)

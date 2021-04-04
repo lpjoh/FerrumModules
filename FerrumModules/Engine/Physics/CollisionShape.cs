@@ -7,6 +7,7 @@ namespace Crossfrog.Ferrum.Engine.Physics
         {
             set
             {
+                Scene?.PhysicsWorld.Remove(this);
                 base.Parent = value;
                 Scene.PhysicsWorld.Add(this);
             }

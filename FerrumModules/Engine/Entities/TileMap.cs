@@ -80,8 +80,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 var shapeBox = shape.BoundingBox;
 
                 var tileScale = TileSize * GlobalScale;
-                var boxStart = (new Vector2(shapeBox.X, shapeBox.Y) - GlobalPosition) / tileScale;
-                var boxEnd = boxStart + new Vector2(shapeBox.Width, shapeBox.Height) / tileScale;
+                var boxStart = (new Vector2(shapeBox.X - 1, shapeBox.Y - 1) - GlobalPosition) / tileScale;
+                var boxEnd = boxStart + new Vector2(shapeBox.Width + 2, shapeBox.Height + 2) / tileScale;
 
                 if (typeof(KinematicHitbox).IsAssignableFrom(shape.Parent.GetType()))
                 {
@@ -100,9 +100,9 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 }
 
                 var rowStart = (int)boxStart.Y - 1;
-                var rowEnd = (int)boxEnd.Y + 1;
+                var rowEnd = (int)boxEnd.Y + 2;
                 var columnStart = (int)boxStart.X - 1;
-                var columnEnd = (int)boxEnd.X + 1;
+                var columnEnd = (int)boxEnd.X + 2;
 
                 for (int i = rowStart; i < rowEnd; i++)
                 {
@@ -228,8 +228,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
 
             var tileFrameStartX = (int)tileFrameStart.X - 1;
             var tileFrameStartY = (int)tileFrameStart.Y - 1;
-            var tileFrameEndX = (int)tileFrameEnd.X + 1;
-            var tileFrameEndY = (int)tileFrameEnd.Y + 1;
+            var tileFrameEndX = (int)tileFrameEnd.X + 2;
+            var tileFrameEndY = (int)tileFrameEnd.Y + 2;
 
             TileSet currentTileSet = TileSetForGid(MapValues[0, 0]);
 

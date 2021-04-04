@@ -153,12 +153,12 @@ namespace Crossfrog.Ferrum.Engine
             if (camera.ScrollClampEnd.X >= cameraBox.Width)
                 cameraPosition.X = Math.Clamp(-cameraBox.X, -camera.ScrollClampEnd.X + cameraBox.Width, -camera.ScrollClampStart.X);
             else
-                cameraPosition.X = Math.Clamp(-cameraBox.X, -camera.ScrollClampStart.X, -camera.ScrollClampEnd.X + cameraBox.Width);
+                cameraPosition.X = camera.ScrollClampStart.X;
 
             if (camera.ScrollClampEnd.Y >= cameraBox.Height)
                 cameraPosition.Y = Math.Clamp(-cameraBox.Y, -camera.ScrollClampEnd.Y + cameraBox.Height, -camera.ScrollClampStart.Y);
             else
-                cameraPosition.Y = Math.Clamp(-cameraBox.Y, -camera.ScrollClampStart.Y, -camera.ScrollClampEnd.Y + cameraBox.Height);
+                cameraPosition.Y = camera.ScrollClampStart.Y;
 
             var matrixClamped =
                 Matrix.CreateTranslation(new Vector3(cameraPosition.X, cameraPosition.Y, 0)) *

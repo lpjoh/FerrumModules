@@ -11,7 +11,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
         public int FPS;
         public int LoopPoint;
 
-        public SpriteAnimation(string name, int fps = 12, int loopPoint = 0, params int[] frames)
+        public SpriteAnimation(int[] frames, string name, int fps = 12, int loopPoint = 0)
         {
 #if DEBUG
             if (loopPoint >= frames.Length)

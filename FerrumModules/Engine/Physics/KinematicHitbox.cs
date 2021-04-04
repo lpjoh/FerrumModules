@@ -87,7 +87,6 @@ namespace Crossfrog.Ferrum.Engine.Physics
 
             for (int i = 0; i < Iterations; i++)
             {
-                if (Velocity == Vector2.Zero) break;
                 PositionOffset += Velocity / Iterations / ParentScale;
 
                 foreach (var body in Scene.PhysicsWorld)
@@ -98,9 +97,9 @@ namespace Crossfrog.Ferrum.Engine.Physics
                     if (typeof(HitboxCollider).IsAssignableFrom(bodyType))
                     {
                         var collider = body.Parent as HitboxCollider;
-                        foreach (var cBox in collider.Hitboxes)
+                        foreach (var mBox in Hitboxes)
                         {
-                            foreach (var mBox in Hitboxes)
+                            foreach (var cBox in collider.Hitboxes)
                             {
                                 ResolveFor(mBox, cBox);
                                 CheckCollisionBools();
@@ -108,6 +107,7 @@ namespace Crossfrog.Ferrum.Engine.Physics
                         }
                     }
                 }
+                if (Velocity == Vector2.Zero) break;
             }
         }
     }

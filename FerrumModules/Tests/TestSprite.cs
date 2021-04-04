@@ -8,7 +8,7 @@ namespace Crossfrog.Ferrum.Tests
         public TestSprite() : base(16, 16)
         {
             Texture = Assets.GetTexture("mario");
-            AddAnimation(new SpriteAnimation("default", 12, 0, new int[] { 3, 4, 5 }));
+            AddAnimation(new SpriteAnimation(new int[] { 3, 4, 5 }, "default", 12, 0));
             CurrentFrame = 6;
         }
 
