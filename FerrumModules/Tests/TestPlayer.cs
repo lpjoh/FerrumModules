@@ -35,9 +35,12 @@ namespace Crossfrog.Ferrum.Tests
         {
             base.Update(delta);
 
+            var sixtyDelta = delta * 60;
+
             //Area.AngleOffset += MathHelper.Pi / 160;
 
-            Velocity.Y += Gravity;
+            if (!OnFloor)
+                Velocity.Y += Gravity;
             if (Input.ActionPressed("move_left"))
             {
                 Velocity.X -= Speed;

@@ -16,29 +16,37 @@ namespace Crossfrog.Ferrum.Engine.Physics
         public bool OnLeftWall { get; private set; }
         public bool OnRightWall { get; private set; }
         public bool OnWall => OnLeftWall || OnRightWall;
-        private Vector2 ParentScale;
-        public Vector2? ResolveFor(CollisionShape mover, CollisionShape collider)
+        public void ResolveFor(CollisionShape mover, CollisionShape collider)
         {
             var moverVertices = mover.GlobalVertices;
             var colliderVertices = collider.GlobalVertices;
 
             var resolution = Collision.ResolutionFor(moverVertices, colliderVertices);
             if (resolution == null)
-                return null;
+                return;
 
-            var offset = resolution.Value / ParentScale;
-            PositionOffset += offset;
-            return offset;
+            var offset = resolution.Value;
+
+            OnFloor |= offset.Y < 0 && offset.Y <= offset.X;
+            OnCeiling |= offset.Y > 0 && offset.Y >= offset.X;
+
+            OnRightWall |= offset.X < 0 && offset.X <= offset.Y;
+            OnLeftWall |= offset.X > 0 && offset.X >= offset.Y;
+
+            GlobalPosition += offset;
+            Velocity.X += offset.X / Iterations;
+            Velocity.Y += offset.Y / Iterations;
         }
         public override void Update(float delta)
         {
             base.Update(delta);
             OnFloor = OnCeiling = OnLeftWall = OnRightWall = false;
-            ParentScale = Parent?.GlobalScale ?? new Vector2(1, 1);
+
+            var oldVelocity = Vector2.Zero + Velocity;
 
             for (int i = 0; i < Iterations; i++)
             {
-                PositionOffset += Velocity / Iterations / ParentScale;
+                GlobalPosition += oldVelocity / Iterations;
 
                 foreach (var body in Scene.PhysicsWorld)
                 {
@@ -52,25 +60,7 @@ namespace Crossfrog.Ferrum.Engine.Physics
                         {
                             foreach (var cBox in collider.CollisionShapes)
                             {
-                                var resolution = ResolveFor(mBox, cBox);
-                                if (resolution == null)
-                                    continue;
-
-                                if (typeof(KinematicBody).IsAssignableFrom(bodyType))
-                                {
-                                    var kinematic = collider as KinematicBody;
-                                    if (Math.Abs(resolution.Value.X) > Math.Abs(resolution.Value.Y))
-                                        Velocity.X = kinematic.Velocity.X;
-                                    else
-                                        Velocity.Y = kinematic.Velocity.Y;
-                                }
-                                else
-                                {
-                                    if (Math.Abs(resolution.Value.X) > Math.Abs(resolution.Value.Y))
-                                        Velocity.X = 0;
-                                    else
-                                        Velocity.Y = 0;
-                                }
+                                ResolveFor(mBox, cBox);
                             }
                         }
                     }

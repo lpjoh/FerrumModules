@@ -96,12 +96,12 @@ namespace Crossfrog.Ferrum.Engine.Modules
                 return line2.End - line1.Start;
             return null;
         }
-        private struct TranslationVector
+        public struct TranslationVector
         {
             public Vector2 Normal;
             public float Magnitude;
         }
-        private static TranslationVector MTVBetween(Vector2[] mover, Vector2[] collider)
+        public static TranslationVector MTVBetween(Vector2[] mover, Vector2[] collider)
         {
             var minResponseMagnitude = float.MaxValue;
             var responseNormal = Vector2.Zero;
@@ -130,16 +130,14 @@ namespace Crossfrog.Ferrum.Engine.Modules
             if (!ConvexPolysCollide(mover, collider))
                 return null;
 
-            var minResponse = MTVBetween(mover, collider);
-            var response2 = MTVBetween(mover, collider);
+            var response1 = MTVBetween(mover, collider);
+            var response2 = MTVBetween(collider, mover);
+            response2.Normal *= -1;
 
-            if (response2.Magnitude < minResponse.Magnitude)
-            {
-                minResponse = response2;
-                minResponse.Normal *= -1;
-            }
-
-            return minResponse.Normal * minResponse.Magnitude;
+            if (Math.Abs(response1.Magnitude) < Math.Abs(response2.Magnitude))
+                return response1.Normal * response1.Magnitude;
+            else
+                return response2.Normal * response2.Magnitude;
         }
     }
 }

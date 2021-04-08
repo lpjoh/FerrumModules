@@ -27,10 +27,9 @@ namespace Crossfrog.Ferrum.Tests
 
             var floor = CurrentScene.AddChild(new StaticBody());
             floor.PositionOffset.Y = 128;
-            floor.PositionOffset.X = 128;
+            floor.PositionOffset.X = 512;
             floor.ScaleOffset *= 6;
             floor.AddChild(new CollisionShape().SetAsRegularShape(7, 16));
-
 
             floor.AddChild(new StaticSprite("mario", 16, 16));
             floor.Name = "Floor";
@@ -40,7 +39,7 @@ namespace Crossfrog.Ferrum.Tests
 
             var tileSet = CurrentScene["Tile Layer 1"] as TileMap;
             tileSet.CollisionActive = true;
-            //tileSet.SetCameraBounds();
+            tileSet.SetCameraBounds();
             //tileSet.ColorOffset = Color.Black;
 
             Input.SetAction("move_left", Keys.Left, Buttons.LeftThumbstickLeft);

@@ -32,9 +32,22 @@ namespace Crossfrog.Ferrum.Engine
         {
             get
             {
-                if (Parent == null) return PositionOffsetRotated;
-                var positionOffset = Parent == RootEntity ? PositionOffset : PositionOffsetRotated;
-                return Parent.GlobalPosition + positionOffset;
+                if (Parent == null)
+                    return PositionOffsetRotated;
+
+                else if (Parent == RootEntity)
+                    return PositionOffset + Parent.PositionOffset;
+
+                return PositionOffsetRotated + Parent.GlobalPosition;
+            }
+            set
+            {
+                if (Parent == null)
+                    PositionOffset = Rotation.Rotate(value, -AngleOffset);
+                else if (Parent == RootEntity)
+                    PositionOffset = value - Parent.PositionOffset;
+                else
+                    PositionOffset = Rotation.Rotate(value / Parent.GlobalScale, -GlobalAngle) - Parent.GlobalPosition;
             }
         }
         public Vector2 ScaleOffset = new Vector2(1.0f, 1.0f);
@@ -42,8 +55,16 @@ namespace Crossfrog.Ferrum.Engine
         {
             get
             {
-                if (Parent == null) return ScaleOffset;
+                if (Parent == null)
+                    return ScaleOffset;
                 return ScaleOffset * Parent.GlobalScale;
+            }
+            set
+            {
+                if (Parent == null)
+                    ScaleOffset = value;
+                else
+                    ScaleOffset = value / Parent.GlobalScale;
             }
         }
         public float AngleOffset = 0.0f;
@@ -51,8 +72,16 @@ namespace Crossfrog.Ferrum.Engine
         {
             get
             {
-                if (Parent == null) return AngleOffset;
-                return Parent.GlobalAngle + AngleOffset;
+                if (Parent == null)
+                    return AngleOffset;
+                return AngleOffset + Parent.GlobalAngle;
+            }
+            set
+            {
+                if (Parent == null)
+                    AngleOffset = value;
+                else
+                    AngleOffset = value - Parent.GlobalAngle;
             }
         }
         public virtual bool Centered { get; set; } = true;
