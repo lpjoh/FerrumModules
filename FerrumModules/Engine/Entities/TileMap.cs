@@ -49,19 +49,19 @@ namespace Crossfrog.Ferrum.Engine.Entities
             }
         }
 
-        private HitboxCollider Collider;
-        private HashSet<Tuple<int, int>> ExistingColliderTiles = new HashSet<Tuple<int, int>>();
+        private Collider Collider;
+        private readonly HashSet<Tuple<int, int>> ExistingColliderTiles = new HashSet<Tuple<int, int>>();
         private static Vector2 colliderCenter = new Vector2(0.5f, 0.5f);
         
 
         private void CreateHitbox()
         {
-            Collider.AddChild(new HitboxShape(1, 1));
+            Collider.AddChild(new CollisionShape().SetAsBox(1, 1));
         }
         public override void Init()
         {
             base.Init();
-            Collider = AddChild(new StaticHitbox());
+            Collider = AddChild(new StaticBody());
         }
         public override void PreCollision()
         {
@@ -74,7 +74,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
             for (int s = 0; s < shapesBefore; s++)
             {
                 var shape = Scene.PhysicsWorld[s];
-                if (shape.Parent == Collider || typeof(StaticHitbox).IsAssignableFrom(shape.Parent?.GetType()))
+                if (shape.Parent == Collider || typeof(StaticBody).IsAssignableFrom(shape.Parent?.GetType()))
                     continue;
 
                 var shapeBox = shape.BoundingBox;
@@ -82,22 +82,6 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 var tileScale = TileSize * GlobalScale;
                 var boxStart = (new Vector2(shapeBox.X - 1, shapeBox.Y - 1) - GlobalPosition) / tileScale;
                 var boxEnd = boxStart + new Vector2(shapeBox.Width + 2, shapeBox.Height + 2) / tileScale;
-
-                if (typeof(KinematicHitbox).IsAssignableFrom(shape.Parent.GetType()))
-                {
-                    var kinematic = shape.Parent as KinematicHitbox;
-                    var tileSpaceVelocity = kinematic.Velocity / TileSize;
-
-                    if (kinematic.Velocity.X < 0)
-                        boxStart.X += tileSpaceVelocity.X;
-                    else
-                        boxEnd.X += tileSpaceVelocity.X;
-
-                    if (kinematic.Velocity.Y < 0)
-                        boxStart.Y += tileSpaceVelocity.Y;
-                    else
-                        boxEnd.Y += tileSpaceVelocity.Y;
-                }
 
                 var rowStart = (int)boxStart.Y - 1;
                 var rowEnd = (int)boxEnd.Y + 2;
@@ -111,7 +95,7 @@ namespace Crossfrog.Ferrum.Engine.Entities
                     if (i < 0) continue;
                     tileRowIndex = i;
 
-                    HitboxShape workingHitbox = null;
+                    CollisionShape workingHitbox = null;
                     for (int j = columnStart; j < columnEnd; j++)
                     {
                         int tileColumnIndex;
@@ -127,10 +111,10 @@ namespace Crossfrog.Ferrum.Engine.Entities
                             if (workingHitbox == null)
                             {
                                 hitboxCount++;
-                                if (hitboxCount > Collider.Hitboxes.Count)
+                                if (hitboxCount > Collider.CollisionShapes.Count)
                                     CreateHitbox();
 
-                                workingHitbox = Collider.Hitboxes[hitboxCount - 1];
+                                workingHitbox = Collider.CollisionShapes[hitboxCount - 1];
                                 workingHitbox.PositionOffset = new Vector2(tileColumnIndex, tileRowIndex) + colliderCenter;
                                 workingHitbox.ScaleOffset.X = 1;
                             }
@@ -148,8 +132,8 @@ namespace Crossfrog.Ferrum.Engine.Entities
                 }
             }
 
-            for (int i = hitboxCount; i < Collider.Hitboxes.Count; i++)
-                Collider.Hitboxes[i].Exit();
+            for (int i = hitboxCount; i < Collider.CollisionShapes.Count; i++)
+                Collider.CollisionShapes[i].Exit();
             ExistingColliderTiles.Clear();
         }
 

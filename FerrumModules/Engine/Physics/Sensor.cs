@@ -5,7 +5,6 @@ namespace Crossfrog.Ferrum.Engine.Physics
 {
     public class Sensor : PhysicsBody
     {
-        public override List<CollisionShape> CollisionShapes => Misc.OnlyWithBase<CollisionShape, Entity>(Children);
         public bool CollidesWith(PhysicsBody body)
         {
             foreach (var myShape in CollisionShapes)

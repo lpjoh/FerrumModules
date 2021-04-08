@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Diagnostics;
 
 using Crossfrog.Ferrum.Engine;
 using Crossfrog.Ferrum.Engine.Modules;
@@ -7,25 +8,24 @@ using Crossfrog.Ferrum.Engine.Physics;
 
 namespace Crossfrog.Ferrum.Tests
 {
-    public class TestPlayer : KinematicHitbox
+    public class TestPlayer : KinematicBody
     {
         public const float Speed = 0.05f;
         public const float JumpHeight = 3.5f;
         public const float Gravity = 0.125f;
-        public const float Decel = 0.9f;
+        public const float Decel = 0.1f;
 
         public AnimatedSprite Sprite;
-        public HitboxShape Hitbox;
+        public CollisionShape Hitbox;
         public Camera Camera;
         public Sensor Area;
 
         public override void Init()
         {
-            ScaleOffset *= 2;
             Sprite = AddChild(new AnimatedSprite("mario", 16, 16, new SpriteAnimation(new int[] { 0 }, "fuck", 6, 0)));
             Sprite.ScaleOffset *= 0.5f;
-            Hitbox = AddChild(new HitboxShape(8, 10));
-            Hitbox.PositionOffset.Y = -1;
+            Hitbox = AddChild(new CollisionShape().SetAsBox(8, 10));
+            Hitbox.PositionOffset.Y = 1.5f;
             Camera = AddChild(new Camera());
             Scene.Camera = Camera;
             Camera.Zoom = 2;
@@ -35,25 +35,28 @@ namespace Crossfrog.Ferrum.Tests
         {
             base.Update(delta);
 
-            var sixtyDelta = delta * 60;
-
             //Area.AngleOffset += MathHelper.Pi / 160;
 
-            Velocity.Y += Gravity * sixtyDelta;
+            Velocity.Y += Gravity;
             if (Input.ActionPressed("move_left"))
             {
-                Velocity.X -= Speed * sixtyDelta;
+                Velocity.X -= Speed;
                 Sprite.FlipX = true;
             }
             else if (Input.ActionPressed("move_right"))
             {
-                Velocity.X += Speed * sixtyDelta;
+                Velocity.X += Speed;
                 Sprite.FlipX = false;
             }
             else
-                Velocity.X *= Decel * sixtyDelta;
+            {
+                Velocity.X -= Decel * Math.Sign(Velocity.X);
 
-            if (Input.ActionJustPressed("fire") && OnFloor)
+                if (Math.Abs(Velocity.X) <= Decel)
+                    Velocity.X = 0;
+            }
+
+            if (Input.ActionJustPressed("fire"))
                 Velocity.Y = -JumpHeight;
             else if (Input.ActionJustReleased("fire") && Velocity.Y < 0)
                 Velocity.Y *= 0.5f;

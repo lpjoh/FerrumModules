@@ -35,21 +35,6 @@ namespace Crossfrog.Ferrum.Engine.Modules
                 rect1Pos.X + rect1Size.X > rect2Pos.X &&
                 rect1Pos.Y + rect1Size.Y > rect2Pos.Y;
         }
-        public static float DifferenceWindow(float moverStart, float moverEnd, float colliderStart, float colliderEnd, float scale)
-        {
-            if (moverStart <= colliderStart && moverEnd >= colliderStart)
-                return (colliderStart - moverEnd) / scale;
-            else if (colliderStart <= moverStart && colliderEnd >= moverStart)
-                return (colliderEnd - moverStart) / scale;
-            return 0.0f;
-        }
-        public static void Resolve1D(float moverStart, float moverEnd, float colliderStart, float colliderEnd, ref float velocity, ref float axis, float scale)
-        {
-            if (velocity > 0)
-                axis -= (moverEnd - colliderStart) / scale;
-            else if (velocity < 0)
-                axis += (colliderEnd - moverStart) / scale;
-        }
         private static float DotProduct(Vector2 v1, Vector2 v2)
         {
             return (v1.X * v2.X) + (v1.Y * v2.Y);
@@ -101,6 +86,60 @@ namespace Crossfrog.Ferrum.Engine.Modules
         public static bool ConvexPolysCollide(Vector2[] shape1, Vector2[] shape2, bool includeGrazing = false)
         {
             return CheckOverlapSAT(shape1, shape2, includeGrazing) && CheckOverlapSAT(shape2, shape1, includeGrazing);
+        }
+
+        private static float? ResponseAcrossLine(ProjectionLine line1, ProjectionLine line2)
+        {
+            if (line1.Start <= line2.Start && line1.End >= line2.Start) // use the >= operator
+                return line2.Start - line1.End;
+            else if (line2.Start <= line1.Start && line2.End >= line1.Start) // use the >= operator
+                return line2.End - line1.Start;
+            return null;
+        }
+        private struct TranslationVector
+        {
+            public Vector2 Normal;
+            public float Magnitude;
+        }
+        private static TranslationVector MTVBetween(Vector2[] mover, Vector2[] collider)
+        {
+            var minResponseMagnitude = float.MaxValue;
+            var responseNormal = Vector2.Zero;
+
+            for (int i = 0; i < collider.Length; i++)
+            {
+                var cPoint1 = collider[i];
+                var cPoint2 = collider[(i + 1) % collider.Length];
+                var cEdgeNormal = NormalBetween(cPoint1, cPoint2);
+                cEdgeNormal.Normalize();
+
+                var mProjected = ProjectLine(mover, cEdgeNormal);
+                var cProjected = ProjectLine(collider, cEdgeNormal);
+
+                var responseMagnitude = ResponseAcrossLine(mProjected, cProjected);
+                if (responseMagnitude != null && Math.Abs(responseMagnitude.Value) < Math.Abs(minResponseMagnitude))
+                {
+                    minResponseMagnitude = responseMagnitude.Value;
+                    responseNormal = cEdgeNormal;
+                }
+            }
+            return new TranslationVector() { Normal = responseNormal, Magnitude = minResponseMagnitude };
+        }
+        public static Vector2? ResolutionFor(Vector2[] mover, Vector2[] collider)
+        {
+            if (!ConvexPolysCollide(mover, collider))
+                return null;
+
+            var minResponse = MTVBetween(mover, collider);
+            var response2 = MTVBetween(mover, collider);
+
+            if (response2.Magnitude < minResponse.Magnitude)
+            {
+                minResponse = response2;
+                minResponse.Normal *= -1;
+            }
+
+            return minResponse.Normal * minResponse.Magnitude;
         }
     }
 }
